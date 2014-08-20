@@ -3,71 +3,54 @@ function Car() {
 
 	base(self, LSprite, []);
 
-	self.DEFAULT_COORD_X = 40;
-	self.DEFAULT_COORD_Y = 290;
-	self.scale = 1;
-	self.canMove = false;
-
 	self.init();
 }
 
 Car.prototype.init = function() {
 	var self = this;
 
-	self.bmap = new LBitmap(new LBitmapData(game.dataList["car"]));
+	self.canMove = false;
+
 	self.layer = new LSprite();
 	self.layer.name = 'car';
-	self.layer.type = Main.RIGID_BODY_TYPE.CAR;
-	self.layer.addBodyVertices([
-		[
-			[0, 117],
-			[10, 61],
-			[25, 10],
-			[111, 0],
-			[227, 34],
-			[307, 61],
-			[307, 117]
-		]
-	], self.DEFAULT_COORD_X, self.DEFAULT_COORD_Y, 0, 1, 1, 0);
-	self.layer.setBodyMouseJoint(true);
-	self.layer.addChild(self.bmap);
+	self.layer.x = 250;
+	self.layer.y = 180;
 	self.addChild(self.layer);
 
-	self.addEventListener(LEvent.ENTER_FRAME, self._onFrame);
-	// 拖车
-	self.addEventListener(LMouseEvent.MOUSE_DOWN, self._onMouseDown);
+	self.layer.addChild(new LBitmap(new LBitmapData(game.dataList["car"])));
 };
 
-Car.prototype._onMouseDown = function(event) {
-	var self = event.clickTarget;
-
-	self.bmap.coordX = self.bmap.x;
-	self.canMove = true;
-
-	self.addEventListener(LMouseEvent.MOUSE_MOVE, self._onMouseMove);
-	self.addEventListener(LMouseEvent.MOUSE_UP, self._onMouseUp);
-	self.addEventListener(LMouseEvent.MOUSE_OUT, self._onMouseUp);
+Car.prototype.setCanMove = function(canMove) {
+	this.canMove = canMove;
 };
 
-Car.prototype._onMouseMove = function(event) {
-	var self = event.clickTarget;
+Car.prototype.getCoords = function() {
+	var self = this,
+		x = self.layer.x,
+		y = self.layer.y,
+		w = self.layer.getWidth(),
+		h = self.layer.getHeight();
 
-	if (self.canMove) {
-		self.bmap.x = event.offsetX - self.DEFAULT_COORD_X;
+	return [
+		[x, y],
+		[x + w, y],
+		[x, y + h],
+		[x + w, y + h]
+	];
+};
+
+Car.prototype.moveToLeft = function(event) {
+	var self = this;
+
+	if (self.canMove && self.layer.x > 240) {
+		self.layer.x -= 5;
 	}
 };
 
-Car.prototype._onMouseUp = function(event) {
-	var self = event.clickTarget;
+Car.prototype.moveToRight = function(event) {
+	var self = this;
 
-	self.canMove = false;
-	self.removeEventListener(LMouseEvent.MOUSE_MOVE, self._onMouseMove);
-	self.removeEventListener(LMouseEvent.MOUSE_UP, self._onMouseUp);
-};
-
-Car.prototype._onFrame = function(event) {
-	var self = event.target;
-
-	// TODO: 车轮旋转动画
-	// console.log(self.rect);
+	if (self.canMove && self.layer.x < 410) {
+		self.layer.x += 5;
+	}
 };

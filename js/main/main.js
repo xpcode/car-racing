@@ -19,27 +19,25 @@ function Main(dataList) {
 	self.throwTicks = Date.now();
 	// 扔道具的默认时间间隔
 	self.throwInterval = 8000;
-	// 当前状态
-	self.currentStatus = Main.RIGID_BODY_TYPE.DEFAULT;
-}
 
-Main.RIGID_BODY_TYPE = {
-	DEFAULT: 1,
-	PROP_ENGINE: 101,
-	PROP_SPIDER: 102,
-	PROP_CAR: 103,
-	PROP_SHIT: 104,
-	CAR: 201,
-	ROAD: 202
-};
+	self.props = {};
+}
 
 Main.prototype.init = function() {
 	var self = this;
 
+	self.leaveSecond = 30;
+	self.leaveMilliSecond = self.leaveSecond * 1000;
+	self.removeAllChild();
+
+	// 初始化游戏背景
 	self.background = new Background();
 	self.addChild(self.background);
 
-	self.ready = new Ready(self.background.run);
+	self.car = new Car();
+	self.addChild(self.car);
+
+	self.ready = new Ready(self.gameStart);
 	self.addChild(self.ready);
 
 	// var fps = new FPS();
@@ -78,80 +76,53 @@ Main.prototype.gameStart = function(event) {
 	var self = game.world;
 
 	// 移除开始界面
-	self.removeChild(self.logo);
-
-	// 初始化游戏背景
-	self.background = new Background();
-	self.addChild(self.background);
-
-	// 初始化汽车
-	self.car = new Car();
-	self.addChild(self.car);
+	self.removeChild(self.ready);
+	self.removeAllEventListener();
 
 	self.addEventListener(LEvent.ENTER_FRAME, self.onFrame);
-
-	// 刚体碰撞检测
-	LGlobal.box2d.setEvent(LEvent.BEGIN_CONTACT, beginContact);
-
-	function beginContact(contact) {
-		var rigidBodyA = contact.GetFixtureA().GetBody();
-		var rigidBodyB = contact.GetFixtureB().GetBody();
-
-		if (rigidBodyB.GetUserData().type == Main.RIGID_BODY_TYPE.CAR) {
-
-			if (self.currentStatus != Main.RIGID_BODY_TYPE.PROP_CAR) {
-				switch (rigidBodyA.GetUserData().type) {
-					case Main.RIGID_BODY_TYPE.PROP_SHIT:
-						self.background.setSpeed(11);
-						self.showFaceback('fb_dot');
-						break;
-
-					case Main.RIGID_BODY_TYPE.PROP_CAR:
-						self.background.setSpeed(33);
-						self.showFaceback('fb_wow');
-						break;
-
-					case Main.RIGID_BODY_TYPE.PROP_ENGINE:
-						self.background.setSpeed(28);
-						self.showFaceback('fb_cool');
-						break;
-
-					case Main.RIGID_BODY_TYPE.PROP_SPIDER:
-						self.background.setSpeed(0);
-						self.showFaceback('fb_sui');
-						break;
-
-					default:
-						break;
-				}
-
-				self.currentStatus = rigidBodyA.GetUserData().type;
-			}
+	self.addEventListener(LMouseEvent.MOUSE_DOWN, function(event) {
+		self.car.setCanMove(true);
+	});
+	self.addEventListener(LMouseEvent.MOUSE_MOVE, function(event) {
+		if (event.offsetX < LGlobal.width / 2) {
+			self.car.moveToLeft();
+		} else {
+			self.car.moveToRight();
 		}
-
-		if (rigidBodyA.GetUserData().target) {
-			rigidBodyA.GetUserData().target.die();
-			rigidBodyA.GetUserData().target.removeAllChild();
-			rigidBodyA.GetUserData().target = null;
-			delete rigidBodyA.GetUserData().target;
-		}
-	};
-};
-
-Main.prototype.running = function() {
-	return this.background.getLeaveSecond() > 0;
-};
-
-Main.prototype.restart = function() {
-	this.background.reset();
-
-	this.addEventListener(LEvent.ENTER_FRAME, this.onFrame);
+	});
+	self.addEventListener(LMouseEvent.MOUSE_UP, function(event) {
+		self.car.setCanMove(false);
+	});
 };
 
 Main.prototype.onFrame = function(event) {
 	var self = event.target;
 
-	if (self.running()) {
+	self.leaveMilliSecond -= game.interval;
+	self.leaveSecond = Math.ceil(self.leaveMilliSecond / 1000);
+
+	// 显示已经跑了多少距离
+	self.background.setDistance();
+	// 显示油耗
+	self.background.setQtrip();
+
+	if (self.leaveSecond > 0) {
+		self.background.backup();
+
+		for (var p in self.props) {
+			if (!self.props.hasOwnProperty(p))
+				continue;
+
+			var _prop = self.props[p];
+
+			if (_prop.getCoord().y > 400 || LGlobal.hitTestPolygon(self.car.getCoords(), _prop.getCoords())) {
+				self.removeChild(_prop);
+
+				self.props[p] = null;
+				delete self.props[p];
+			}
+		}
+
 		if (Date.now() >= self.throwTicks) {
 			var prop = new Prop();
 			self.addChild(prop);
@@ -159,11 +130,13 @@ Main.prototype.onFrame = function(event) {
 			self.throwTicks += Math.ceil(self.throwInterval * Math.random());
 			// 掉道具的间隔变短
 			self.throwInterval -= game.interval;
+
+			self.props[self.throwTicks] = prop;
 		}
 
 	} else {
 		self.gameOver = new GameOver(function() {
-			self.restart();
+			self.addEventListener(LEvent.ENTER_FRAME, self.onFrame);
 		});
 		self.addChild(self.gameOver);
 

@@ -1,150 +1,97 @@
 function Background() {
-	base(this, LSprite, []);
+	var self = this;
 
-	this.DEFAULT_SPEED = 22;
+	base(self, LSprite, []);
+
+	self.DEFAULT_SPEED = 22;
 	// 马路速度
 	// 其他的速度=马路速度*转换率
-	this.speed = this.DEFAULT_SPEED;
-	this.unhandleQueue = [];
-	this.leaveSecondDesc = '剩余时间：';
-	this.scoreUnit = ' / M';
+	self.speed = self.DEFAULT_SPEED;
+	self.unhandleQueue = [];
+	self.leaveSecondDesc = '剩余时间：';
+	self.scoreUnit = ' / M';
 
-	this.init();
+	self.init();
 }
 
-Background.prototype.run = function() {
-
-};
-
 /*
- * 背景包括以下部分
- * 1、后退的马路
- * 2、后退的路边灌木丛（近处）
- * 3、后退的远处高楼（远处）
- * 4、整体背景
+ * 背景包括以下几层
+ * 1、背景图
+ * 2、两侧的房子、树和马路中间虚线
+ * 3、油桶、游戏进度
  */
 Background.prototype.init = function() {
 	var self = this;
 
-	self.layer = new LSprite();
-	self.addChild(self.layer);
+	// 背景
+	self.layer1 = new LSprite();
+	self.addChild(self.layer1);
+	// 左侧
+	self.layer2_l = new LSprite();
+	self.addChild(self.layer2_l);
+	// 中间
+	self.layer2_m = new LSprite();
+	self.addChild(self.layer2_m);
+	// 右侧
+	self.layer2_r = new LSprite();
+	self.addChild(self.layer2_r);
+	// 散件
+	self.layer3 = new LSprite();
+	self.addChild(self.layer3);
 
+	// 背景图
+	self.layer1.addChild(new LBitmap(new LBitmapData(game.dataList["bg"])));
 
-	// 游戏背景
-	self.layer.addChild(new LBitmap(new LBitmapData(game.dataList["bg"])));
-	var car = new LBitmap(new LBitmapData(game.dataList["car"]));
-	car.x = 250;
-	car.y = 180;
-	self.layer.addChild(car);
-	// self.layer.addChild(new LBitmap(new LBitmapData(game.dataList["gas"])));
-	return;
-	// 左右刚体
-	self.layerLeft = new LSprite();
-	self.layerLeft.name = 'left';
-	self.layerLeft.x = 0;
-	self.layerLeft.y = 0;
-	self.layerLeft.addBodyPolygon(10, LGlobal.height, 0);
-	self.addChild(self.layerLeft);
-	// 左右刚体
-	self.layerRight = new LSprite();
-	self.layerRight.name = 'left';
-	self.layerRight.x = LGlobal.width - 10;
-	self.layerRight.y = 0;
-	self.layerRight.addBodyPolygon(10, LGlobal.height, 0);
-	self.addChild(self.layerRight);
-	// 马路
-	self.bmapRoad = new LBitmap(new LBitmapData(game.dataList["bg_road"]));
-	self.bmapRoad.speedRate = 1;
-	self.bmapRoad.coordX = 0;
-	self.bmapRoad.y = self.bmapSky.height;
-	// self.addChild(self.bmapRoad);
-	// 马路刚体
-	self.layer = new LSprite();
-	self.layer.name = 'road';
-	self.layer.type = Main.RIGID_BODY_TYPE.ROAD;
-	self.layer.x = LGlobal.width / 2;
-	self.layer.y = self.bmapSky.height + self.bmapRoad.y / 2;
-	self.layer.addBodyPolygon(LGlobal.width, 10, 0, 1, 1, 0);
-	self.addChild(self.layer);
-	// 云朵
-	self.bmapCloudeB = new LBitmap(new LBitmapData(game.dataList["bg_cloude_b"]));
-	self.bmapCloudeB.x = 220;
-	self.bmapCloudeB.y = 80;
-	self.addChild(self.bmapCloudeB);
-	self.bmapCloudeS = new LBitmap(new LBitmapData(game.dataList["bg_cloude_s"]));
-	self.bmapCloudeS.x = 20;
-	self.bmapCloudeS.y = 20;
-	self.addChild(self.bmapCloudeS);
-	// 高楼
-	self.bmapFloor1 = new LBitmap(new LBitmapData(game.dataList["bg_floor1"]));
-	self.bmapFloor1.x = LGlobal.width * 0.08;
-	self.bmapFloor1.y = self.bmapSky.height - self.bmapFloor1.height;
-	self.bmapFloor1.speedRate = 0.6;
-	self.bmapFloor1.coordX = 0;
-	self.addChild(self.bmapFloor1);
-	self.bmapFloor2 = new LBitmap(new LBitmapData(game.dataList["bg_floor2"]));
-	self.bmapFloor2.x = LGlobal.width * 0.4;
-	self.bmapFloor2.y = self.bmapSky.height - self.bmapFloor2.height;
-	self.bmapFloor2.speedRate = 0.6;
-	self.bmapFloor2.coordX = 0;
-	self.addChild(self.bmapFloor2);
-	// 矮楼
-	self.bmapFloor3 = new LBitmap(new LBitmapData(game.dataList["bg_floor3"]));
-	self.bmapFloor3.y = self.bmapSky.height - self.bmapFloor3.height;
-	self.bmapFloor3.speedRate = 0.1;
-	self.bmapFloor3.coordX = 0;
-	self.addChild(self.bmapFloor3);
-	// 灌木丛
-	self.bmapTree1 = new LBitmap(new LBitmapData(game.dataList["bg_tree1"]));
-	self.bmapTree1.y = self.bmapSky.height - self.bmapTree1.height;
-	self.bmapTree1.speedRate = 0.6;
-	self.bmapTree1.coordX = 0;
-	self.addChild(self.bmapTree1);
-	self.bmapTree2 = new LBitmap(new LBitmapData(game.dataList["bg_tree2"]));
-	self.bmapTree2.y = self.bmapSky.height - self.bmapTree2.height;
-	self.bmapTree2.speedRate = 0.8;
-	self.bmapTree2.coordX = 0;
-	// self.addChild(self.bmapTree2);
-	// 时间
-	self.ltxtTimes = new LTextField();
-	self.ltxtTimes.font = "Bauhaus 93";
-	self.ltxtTimes.weight = "normal";
-	self.ltxtTimes.size = 12;
-	self.ltxtTimes.x = 40;
-	self.ltxtTimes.y = 40;
-	self.ltxtTimes.alpha = 0.8;
-	self.ltxtTimes.color = "#FF0000";
-	self.ltxtTimes.text = self.leaveSecondDesc + self.leaveSecond;
-	self.addChild(self.ltxtTimes);
-	// 成绩
-	self.ltxtScore = new LTextField();
-	self.ltxtScore.font = "Bauhaus 93";
-	self.ltxtScore.weight = "normal";
-	self.ltxtScore.size = 12;
-	self.ltxtScore.x = LGlobal.width - 100;
-	self.ltxtScore.y = 40;
-	self.ltxtScore.alpha = 0.8;
-	self.ltxtScore.color = "#FF0000";
-	self.ltxtScore.text = Math.ceil(self.score) + self.scoreUnit;
-	self.addChild(self.ltxtScore);
+	// 两侧的房子、树和马路中间虚线
+	self._genRoadtips();
+	self._genHourses();
 
-	self.addEventListener(LEvent.ENTER_FRAME, self._onFrame);
+	// 油桶
+	var gas = new LBitmap(new LBitmapData(game.dataList["gas"]));
+	gas.x = 230;
+	gas.y = LGlobal.height - gas.height - 10;
+	self.layer3.addChild(gas);
+};
 
-	// 需要处理速度的对象集
-	// self.unhandleQueue.push(self.bmapFloor1);
-	// self.unhandleQueue.push(self.bmapFloor2);
-	self.unhandleQueue.push(self.bmapFloor3);
-	self.unhandleQueue.push(self.bmapTree1);
-	// self.unhandleQueue.push(self.bmapTree2);
-	self.unhandleQueue.push(self.bmapRoad);
+Background.prototype._genRoadtips = function() {
+	var self = this,
+		i = 0,
+		distance = 0,
+		bmap = new LBitmap(new LBitmapData(game.dataList["roadtip"])),
+		count = (LGlobal.height / bmap.height) * 2;
+
+	bmap.x = bmap.y = 0;
+
+	while (i < count) {
+		var tBmap = bmap.clone();
+
+		tBmap.y += distance;
+
+		self.layer2_m.addChild(tBmap);
+
+		i++;
+		distance += bmap.height * 1.5;
+	}
+
+	self.layer2_m.x = LGlobal.width / 2 - 20;
+	self.layer2_m.y = LGlobal.height - self.layer2_m.getHeight();
+};
+
+Background.prototype._genHourses = function() {};
+
+Background.prototype.backup = function() {
+	var self = this;
+
+	// 马路后退
+	if (self.layer2_m.y > -LGlobal.width) {
+		self.layer2_m.y = LGlobal.height - self.layer2_m.getHeight();
+	}
+
+	self.layer2_m.y += self.speed;
 };
 
 Background.prototype.setSpeed = function(_speed) {
 	this.speed = _speed;
-};
-
-Background.prototype.getLeaveSecond = function() {
-	return this.leaveSecond;
 };
 
 Background.prototype._onFrame = function(event) {

@@ -15,7 +15,7 @@ Ready.prototype.init = function() {
 	self.layer = new LSprite();
 	self.addChild(self.layer);
 
-	var names = ['time_3', 'time_2', 'time_1', 'time_go'];
+	var names = [];//'time_3', 'time_2', 'time_1', 'time_go'];
 	var index = 0;
 
 	var intervalId = window.setInterval(function() {
