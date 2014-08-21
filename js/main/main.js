@@ -102,9 +102,9 @@ Main.prototype.onFrame = function(event) {
 	self.leaveSecond = Math.ceil(self.leaveMilliSecond / 1000);
 
 	// 显示已经跑了多少距离
-	self.background.setDistance();
+	self.background.setDistance(self.leaveSecond);
 	// 显示油耗
-	self.background.setQtrip();
+	self.background.setQtrip(self.leaveSecond);
 
 	if (self.leaveSecond > 0) {
 		self.background.backup();

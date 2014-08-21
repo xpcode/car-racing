@@ -7,9 +7,6 @@ function Background() {
 	// 马路速度
 	// 其他的速度=马路速度*转换率
 	self.speed = self.DEFAULT_SPEED;
-	self.unhandleQueue = [];
-	self.leaveSecondDesc = '剩余时间：';
-	self.scoreUnit = ' / M';
 
 	self.init();
 }
@@ -29,12 +26,16 @@ Background.prototype.init = function() {
 	// 左侧
 	self.layer2_l = new LSprite();
 	self.addChild(self.layer2_l);
+	self.layer2_l_stat = new LSprite();
+	self.addChild(self.layer2_l_stat);
 	// 中间
 	self.layer2_m = new LSprite();
 	self.addChild(self.layer2_m);
 	// 右侧
 	self.layer2_r = new LSprite();
 	self.addChild(self.layer2_r);
+	self.layer2_r_stat = new LSprite();
+	self.addChild(self.layer2_r_stat);
 	// 散件
 	self.layer3 = new LSprite();
 	self.addChild(self.layer3);
@@ -79,6 +80,78 @@ Background.prototype._genRoadtips = function() {
 
 Background.prototype._genHourses = function() {};
 
+Background.prototype._getResourceName = function(num) {
+	return {
+		'1': 'number_1',
+		'2': 'number_2',
+		'3': 'number_3',
+		'4': 'number_4',
+		'5': 'number_5',
+		'6': 'number_6',
+		'7': 'number_7',
+		'8': 'number_8',
+		'9': 'number_9',
+		'0': 'number_0',
+		'.': 'number_dot',
+		'km': 'number_km',
+		'dw': 'number_dw'
+	}[num] || '';
+};
+
+Background.prototype.setDistance = function(distance) {
+	var self = this;
+	var arr = String(distance).split('').concat(['km']);
+	var i = 0,
+		len = arr.length,
+		name = '',
+		bmap = null,
+		x = 0;
+
+	self.layer2_r_stat.removeAllChild();
+
+	for (; i < len; i++) {
+		name = this._getResourceName(arr[i]);
+
+		if (name.length > 0) {
+			bmap = new LBitmap(new LBitmapData(game.dataList[name]));
+			bmap.x = x;
+			self.layer2_r_stat.addChild(bmap);
+
+			x += bmap.width;
+		}
+	}
+
+	self.layer2_r_stat.x = LGlobal.width - self.layer2_r_stat.getWidth() - 60;
+	self.layer2_r_stat.y = 20;
+};
+
+Background.prototype.setQtrip = function(qtrip) {
+	var self = this;
+	var arr = String(qtrip).split('').concat(['dw']);
+	var i = 0,
+		len = arr.length,
+		name = '',
+		bmap = null,
+		x = 0;
+
+	self.layer2_l_stat.removeAllChild();
+
+	for (; i < len; i++) {
+		name = this._getResourceName(arr[i]);
+
+		if (name.length > 0) {
+			bmap = new LBitmap(new LBitmapData(game.dataList[name]));
+			bmap.x = x;
+			self.layer2_l_stat.addChild(bmap);
+
+			x += bmap.width;
+		}
+	}
+
+	self.layer2_l_stat.x = 160;
+	self.layer2_l_stat.y = 20;
+};
+
 Background.prototype.backup = function() {
 	var self = this;
 
@@ -92,31 +165,4 @@ Background.prototype.backup = function() {
 
 Background.prototype.setSpeed = function(_speed) {
 	this.speed = _speed;
-};
-
-Background.prototype._onFrame = function(event) {
-	var self = event.target;
-
-	if (game.world.running()) {
-		for (var i = 0, len = self.unhandleQueue.length; i < len; i++) {
-			var bmap = self.unhandleQueue[i];
-
-			bmap.coordX += bmap.speedRate * self.speed;
-
-			if (bmap.coordX > game.cycleWidth) {
-				bmap.coordX -= game.cycleWidth;
-			}
-
-			bmap.bitmapData.setCoordinate(bmap.coordX, 0);
-		}
-
-		self.leaveMilliSecond -= game.interval;
-		self.leaveSecond = Math.ceil(self.leaveMilliSecond / 1000);
-		self.score += 22 / (1000 / game.interval);
-
-		self.ltxtTimes.text = self.leaveSecondDesc + self.leaveSecond;
-		self.ltxtScore.text = Math.ceil(self.score) + self.scoreUnit;
-	} else {
-		self.removeEventListener(LEvent.ENTER_FRAME, self._onFrame);
-	}
 };
