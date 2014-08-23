@@ -11,27 +11,30 @@ function GameOver(resources, fnStartGame) {
 GameOver.prototype.init = function() {
 	var self = this;
 
-	self.ltxtGameOver = new LTextField();
-	self.ltxtGameOver.font = "Bauhaus 93";
-	self.ltxtGameOver.weight = "normal";
-	self.ltxtGameOver.size = 26;
-	// self.ltxtGameOver.alpha = 0.8;
-	self.ltxtGameOver.color = "#FFF";
-	self.ltxtGameOver.text = '游戏结束';
-	self.ltxtGameOver.lineWidth = 5;
-	self.ltxtGameOver.x = (LGlobal.width - self.ltxtGameOver.width / 4) / 2;
-	self.ltxtGameOver.y = LGlobal.height / 3.5;
-	self.addChild(self.ltxtGameOver);
+	self.layer = new LSprite();
+	self.addChild(self.layer);
 
-	var bitmapDataUp = new LBitmapData(self.resources["btn_start"], 0, 0, 98, 48);
-	var bitmapUp = new LBitmap(bitmapDataUp);
+	var bitmap = new LBitmap(new LBitmapData(self.resources['end']));
 
-	var bitmapDataOver = new LBitmapData(self.resources["btn_start"], 0, 48, 98, 48);
-	var bitmapOver = new LBitmap(bitmapDataOver);
+	self.layer.x = (LGlobal.width - bitmap.width) / 2;
+	self.layer.y = (LGlobal.height - bitmap.height) / 2;
+	self.layer.addChild(bitmap);
 
-	var btnStart = new LButton(bitmapUp, bitmapOver);
-	btnStart.x = (LGlobal.width - bitmapDataUp.width) / 2;
-	btnStart.y = (LGlobal.height - bitmapDataUp.height) / 2;
-	// btnStart.addEventListener(LMouseEvent.MOUSE_UP, Main.start);
-	self.addChild(btnStart);
+	var buttonUp = new LBitmap(new LBitmapData(self.resources['btn_submit']));
+	var buttonOver = new LBitmap(new LBitmapData(self.resources['btn_submit'], 1, 1));
+	var button = new LButton(buttonUp, buttonOver);
+	button.x = (self.layer.getWidth() - buttonUp.width) / 2;
+	button.y = 327;
+	self.layer.addChild(button);
+
+	// 点击按钮提交游戏成绩，开启重新游戏界面
+	button.addEventListener(LMouseEvent.MOUSE_DOWN, function() {
+		button.removeAllChild();
+		button.removeAllEventListener();
+
+		self.layer.removeAllChild();
+		self.removeChild(self.layer);
+
+		self.restart();
+	});
 };

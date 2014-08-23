@@ -19,7 +19,9 @@ Prop.prototype.init = function() {
 	self.layer.x = Math.random() * LGlobal.width;
 	self.addChild(self.layer);
 
-	var bmap = new LBitmap(new LBitmapData(self.resources['jyq']));
+	var name = Math.random() > 0.5 ? 'jyq1' : 'jyq2';
+	var bmap = new LBitmap(new LBitmapData(self.resources[name]));
+	self.layer.name = name;
 	self.layer.addChild(bmap);
 	self.layer.addBodyPolygon(bmap.width, bmap.height, 1, 5, .4, .2);
 };
@@ -40,10 +42,21 @@ Prop.prototype.getCoords = function() {
 		w = self.layer.getWidth(),
 		h = self.layer.getHeight();
 
-	return [
-		[x, y],
-		[x + w, y],
-		[x, y + h],
-		[x + w, y + h]
-	];
+	if (self.layer.name == 'jyq1') {
+		return [
+			[x, y],
+			[x + 16, y + 31],
+			[x + 21, y + 63],
+			[x + 49, y + 63],
+			[x + 49, y]
+		];
+	} else {
+		return [
+			[x, y],
+			[x + 12, y + 52],
+			[x + 17, y + 65],
+			[x + 44, y + 66],
+			[x + 44, y]
+		];
+	}
 };

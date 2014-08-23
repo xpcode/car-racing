@@ -36,7 +36,7 @@ Main.prototype.init = function() {
 	// 当前油耗（默认小数点后6位）（获得节油器会降低当前油耗值）
 	self.oilWear = self.DEFAULT_OIL_WEAR_SECOND;
 	// 通过开始10秒钟的点击获得的油量
-	self.oilMassObtained = 3;
+	self.oilMassObtained = 0;
 	// 当前还剩下多少L油（默认小数点后1位）
 	self.oilMassLeave = self.oilMassObtained;
 
@@ -51,29 +51,32 @@ Main.prototype.init = function() {
 	self.addChild(self.ready);
 };
 
-Main.prototype._start = function() {
+Main.prototype._start = function(clickCount) {
 	var self = Main._instance;
+
+	self.oilMassObtained = self._getOilMassObtained(clickCount);
+	self.oilMassLeave = self.oilMassObtained;
 
 	// 移除开始界面
 	self.removeChild(self.ready);
 	self.removeAllEventListener();
 
 	self.addEventListener(LEvent.ENTER_FRAME, self._onFrame);
-
 	self.addEventListener(LMouseEvent.MOUSE_DOWN, self._onMouseDown);
+
+	self.car.setCanMove(true);
 };
 
 Main.prototype._onMouseDown = function(event) {
 	var self = Main._instance;
 
-	if (self.oilMassLeave <= 0) {
-
-	} else {
+	if (self.oilMassLeave > 0) {
 		if (event.offsetX < LGlobal.width / 2) {
 			self.car.moveToLeft();
 		} else {
 			self.car.moveToRight();
 		}
+		self.car.setDirection();
 	}
 }
 
@@ -82,12 +85,12 @@ Main.prototype._onFrame = function(event) {
 
 	self.oilMassLeave -= self.DEFAULT_OIL_WEAR;
 
-	// 显示已经跑了多少距离
-	self.background.setDistance(self._getDistance());
-	// 显示剩余油量
-	self.background.setQtrip(self.oilMassLeave.toFixed(1));
-
 	if (self.oilMassLeave > 0) {
+		// 显示已经跑了多少距离
+		self.background.setDistance(self._getDistance());
+		// 显示剩余油量
+		self.background.setQtrip(self.oilMassLeave.toFixed(2));
+
 		self.background.backup();
 
 		for (var p in self.props) {
@@ -95,8 +98,7 @@ Main.prototype._onFrame = function(event) {
 				continue;
 
 			var _prop = self.props[p];
-
-			if (_prop.getCoord().y > 400 || LGlobal.hitTestPolygon(self.car.getCoords(), _prop.getCoords())) {
+			if (_prop.getCoord().y > 320 || LGlobal.hitTestPolygon(self.car.getCoords(), _prop.getCoords())) {
 				self.removeChild(_prop);
 
 				self.props[p] = null;
@@ -114,12 +116,13 @@ Main.prototype._onFrame = function(event) {
 		}
 
 	} else {
+		self.car.setCanMove(false);
 		self.gameOver = new GameOver(self.resources, function() {
-			self.addEventListener(LEvent.ENTER_FRAME, self.onFrame);
+			self.init();
 		});
 		self.addChild(self.gameOver);
 
-		self.removeEventListener(LEvent.ENTER_FRAME, self.onFrame);
+		self.removeEventListener(LEvent.ENTER_FRAME, self._onFrame);
 	}
 };
 
@@ -129,6 +132,20 @@ Main.prototype._getDistance = function() {
 
 	// 标准平均油耗为5.9L/100km
 	return (((self.oilMassObtained - self.oilMassLeave) * 100) / 5.9).toFixed(4);
+};
+
+// 计算获得的油量
+Main.prototype._getOilMassObtained = function(clickCount) {
+	var self = this;
+	var oilmass = 1;
+
+	if (clickCount > 100) {
+		oilmass += ((clickCount - 100) / 10) * 0.05;
+	} else {
+		oilmass -= ((100 - clickCount) / 5) * 0.05;
+	}
+
+	return oilmass;
 };
 
 Main._instance = null;

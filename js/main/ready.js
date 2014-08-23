@@ -7,6 +7,8 @@ function Ready(resources, callback) {
 	self.callback = callback || function() {
 		alert('miss start function.')
 	};
+	self.clickCount = 0;
+
 	self.init();
 }
 
@@ -16,7 +18,41 @@ Ready.prototype.init = function() {
 	self.layer = new LSprite();
 	self.addChild(self.layer);
 
-	var names = ['time_3', 'time_2', 'time_1', 'time_go'];
+	var bitmap = new LBitmap(new LBitmapData(self.resources['start']));
+
+	self.layer.x = (LGlobal.width - bitmap.width) / 2;
+	self.layer.y = (LGlobal.height - bitmap.height) / 2;
+	self.layer.addChild(bitmap);
+
+	var buttonUp = new LBitmap(new LBitmapData(self.resources['btn_start']));
+	var buttonOver = new LBitmap(new LBitmapData(self.resources['btn_start'], 1, 1));
+	var button = new LButton(buttonUp, buttonOver);
+	button.x = (self.layer.getWidth() - buttonUp.width) / 2 - 10;
+	button.y = 278;
+	self.layer.addChild(button);
+
+	// 点击按钮10秒后开始3、2、1、go
+	button.addEventListener(LMouseEvent.MOUSE_DOWN, function() {
+		button.removeAllChild();
+		button.removeAllEventListener();
+
+		self.layer.removeAllChild();
+
+		setTimeout(function() {
+			LGlobal.stage.removeAllEventListener();
+			self._clickScreen();
+		}, 1 * 1000);
+
+		// 点击屏幕开始计点击次数
+		LGlobal.stage.addEventListener(LMouseEvent.MOUSE_DOWN, function() {
+			self.clickCount++;
+		});
+	});
+};
+
+Ready.prototype._clickScreen = function() {
+	var self = this;
+	var names = [];//'time_3', 'time_2', 'time_1', 'time_go'];
 	var index = 0;
 
 	var intervalId = window.setInterval(function() {
@@ -34,8 +70,10 @@ Ready.prototype.init = function() {
 		} else {
 			window.clearInterval(intervalId);
 
+			self.layer.removeAllChild();
 			self.removeChild(self.layer);
-			self.callback();
+			self.callback(self.clickCount+110);
+
 		}
 	}, 1000);
 };
