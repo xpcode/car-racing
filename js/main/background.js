@@ -1,4 +1,4 @@
-function Background() {
+function Background(resources) {
 	var self = this;
 
 	base(self, LSprite, []);
@@ -7,6 +7,7 @@ function Background() {
 	// 马路速度
 	// 其他的速度=马路速度*转换率
 	self.speed = self.DEFAULT_SPEED;
+	self.resources = resources;
 
 	self.init();
 }
@@ -41,14 +42,14 @@ Background.prototype.init = function() {
 	self.addChild(self.layer3);
 
 	// 背景图
-	self.layer1.addChild(new LBitmap(new LBitmapData(game.dataList["bg"])));
+	self.layer1.addChild(new LBitmap(new LBitmapData(self.resources["bg"])));
 
 	// 两侧的房子、树和马路中间虚线
 	self._genRoadtips();
 	self._genHourses();
 
 	// 油桶
-	var gas = new LBitmap(new LBitmapData(game.dataList["gas"]));
+	var gas = new LBitmap(new LBitmapData(self.resources["gas"]));
 	gas.x = 230;
 	gas.y = LGlobal.height - gas.height - 10;
 	self.layer3.addChild(gas);
@@ -58,7 +59,7 @@ Background.prototype._genRoadtips = function() {
 	var self = this,
 		i = 0,
 		distance = 0,
-		bmap = new LBitmap(new LBitmapData(game.dataList["roadtip"])),
+		bmap = new LBitmap(new LBitmapData(self.resources["roadtip"])),
 		count = (LGlobal.height / bmap.height) * 2;
 
 	bmap.x = bmap.y = 0;
@@ -113,7 +114,7 @@ Background.prototype.setDistance = function(distance) {
 		name = this._getResourceName(arr[i]);
 
 		if (name.length > 0) {
-			bmap = new LBitmap(new LBitmapData(game.dataList[name]));
+			bmap = new LBitmap(new LBitmapData(self.resources[name]));
 			bmap.x = x;
 			self.layer2_r_stat.addChild(bmap);
 
@@ -121,7 +122,7 @@ Background.prototype.setDistance = function(distance) {
 		}
 	}
 
-	self.layer2_r_stat.x = LGlobal.width - self.layer2_r_stat.getWidth() - 60;
+	self.layer2_r_stat.x = LGlobal.width - self.layer2_r_stat.getWidth() - 20;
 	self.layer2_r_stat.y = 20;
 };
 
@@ -140,7 +141,7 @@ Background.prototype.setQtrip = function(qtrip) {
 		name = this._getResourceName(arr[i]);
 
 		if (name.length > 0) {
-			bmap = new LBitmap(new LBitmapData(game.dataList[name]));
+			bmap = new LBitmap(new LBitmapData(self.resources[name]));
 			bmap.x = x;
 			self.layer2_l_stat.addChild(bmap);
 

@@ -1,10 +1,11 @@
-function Prop() {
+function Prop(resources) {
 	var self = this;
 
 	base(self, LSprite, []);
 
 	self.DEFAULT_Y = 80;
 	self.DEFAULT_SPEED = 10;
+	self.resources = resources;
 
 	self.init();
 }
@@ -18,7 +19,7 @@ Prop.prototype.init = function() {
 	self.layer.x = Math.random() * LGlobal.width;
 	self.addChild(self.layer);
 
-	var bmap = new LBitmap(new LBitmapData(game.dataList['jyq']));
+	var bmap = new LBitmap(new LBitmapData(self.resources['jyq']));
 	self.layer.addChild(bmap);
 	self.layer.addBodyPolygon(bmap.width, bmap.height, 1, 5, .4, .2);
 };

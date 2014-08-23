@@ -1,9 +1,10 @@
 /**
  * @author lufy
  */
-function GameOver(fnStartGame) {
+function GameOver(resources, fnStartGame) {
 	base(this, LSprite, []);
 
+	this.resources = resources;
 	this.restart = fnStartGame;
 	this.init();
 }
@@ -22,15 +23,15 @@ GameOver.prototype.init = function() {
 	self.ltxtGameOver.y = LGlobal.height / 3.5;
 	self.addChild(self.ltxtGameOver);
 
-	var bitmapDataUp = new LBitmapData(game.dataList["btn_start"], 0, 0, 98, 48);
+	var bitmapDataUp = new LBitmapData(self.resources["btn_start"], 0, 0, 98, 48);
 	var bitmapUp = new LBitmap(bitmapDataUp);
 
-	var bitmapDataOver = new LBitmapData(game.dataList["btn_start"], 0, 48, 98, 48);
+	var bitmapDataOver = new LBitmapData(self.resources["btn_start"], 0, 48, 98, 48);
 	var bitmapOver = new LBitmap(bitmapDataOver);
 
 	var btnStart = new LButton(bitmapUp, bitmapOver);
 	btnStart.x = (LGlobal.width - bitmapDataUp.width) / 2;
 	btnStart.y = (LGlobal.height - bitmapDataUp.height) / 2;
-	btnStart.addEventListener(LMouseEvent.MOUSE_UP, game.world.gameStart);
+	// btnStart.addEventListener(LMouseEvent.MOUSE_UP, Main.start);
 	self.addChild(btnStart);
 };

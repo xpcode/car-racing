@@ -1,5 +1,7 @@
-function Car() {
+function Car(resources) {
 	var self = this;
+
+	self.resources = resources;
 
 	base(self, LSprite, []);
 
@@ -17,7 +19,7 @@ Car.prototype.init = function() {
 	self.layer.y = 180;
 	self.addChild(self.layer);
 
-	self.layer.addChild(new LBitmap(new LBitmapData(game.dataList["car"])));
+	self.layer.addChild(new LBitmap(new LBitmapData(self.resources["car1"])));
 };
 
 Car.prototype.setCanMove = function(canMove) {

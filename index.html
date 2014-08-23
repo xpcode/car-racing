@@ -30,8 +30,11 @@
 			name: "bg",
 			path: "/img/bg.png"
 		}, {
-			name: "car",
-			path: "/img/car.png"
+			name: "car1",
+			path: "/img/car1.png"
+		}, {
+			name: "car2",
+			path: "/img/car2.png"
 		}, {
 			name: "gas",
 			path: "/img/gas.png"
@@ -182,23 +185,18 @@
 
 		initScreen();
 
-		var loadingLayer = new LoadingSample7();
-		addChild(loadingLayer);
+		var loading = new LoadingSample7();
+		addChild(loading);
 
 		LLoadManage.load(game.resources, function(progress) {
-			loadingLayer.setProgress(progress);
+			loading.setProgress(progress);
 
 		}, function(result){
-			removeChild(loadingLayer);
-			loadingLayer = null;
-			delete loadingLayer;
+			removeChild(loading);
+			loading = null;
+			delete loading;
 
-			game.dataList = result;
-
-			game.world = new Main();
-			addChild(game.world);
-
-			game.world.init();
+			Main.create(result);
 		});
 	});
 
