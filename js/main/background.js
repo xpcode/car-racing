@@ -153,6 +153,25 @@ Background.prototype.setQtrip = function(qtrip) {
 	self.layer2_l_stat.y = 20;
 };
 
+Background.prototype.setOilMass = function(oilmass) {
+	var self = this;
+
+	var shape = new LShape();
+	self.layer2_m.addChild(shape);
+
+	shape.graphics.drawVertices(2, "ff2842", [
+		[130, 200],
+		[430, 300],
+		[130, 300]
+	]);
+	shape.graphics.drawVertices(2, "fff156", [
+		[10, 160],
+		[60, 250],
+		[100, 200]
+	], true, "#880088");
+
+};
+
 Background.prototype.backup = function() {
 	var self = this;
 
@@ -162,8 +181,4 @@ Background.prototype.backup = function() {
 	}
 
 	self.layer2_m.y += self.speed;
-};
-
-Background.prototype.setSpeed = function(_speed) {
-	this.speed = _speed;
 };

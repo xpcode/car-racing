@@ -22,8 +22,15 @@ Prop.prototype.init = function() {
 	var name = Math.random() > 0.5 ? 'jyq1' : 'jyq2';
 	var bmap = new LBitmap(new LBitmapData(self.resources[name]));
 	self.layer.name = name;
+	self.layer.scaleX = 0.2;
+	self.layer.scaleY = 0.2;
 	self.layer.addChild(bmap);
-	self.layer.addBodyPolygon(bmap.width, bmap.height, 1, 5, .4, .2);
+	LTweenLite.to(self.layer, 5, {
+		y: LGlobal.height,
+		scaleX: 1.2,
+		scaleY: 1.2,
+		ease: LEasing.Strong.easeInOut
+	});
 };
 
 Prop.prototype.getCoord = function() {

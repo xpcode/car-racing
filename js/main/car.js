@@ -16,8 +16,8 @@ Car.prototype.init = function() {
 	self.location = 0;
 
 	self.layer = new LSprite();
-	self.layer.x = 220;
-	self.layer.y = 180;
+	self.layer.x = 235;
+	self.layer.y = 140;
 	self.addChild(self.layer);
 
 	// 默认设置为左边
@@ -75,7 +75,13 @@ Car.prototype.moveToLeft = function(event) {
 	var self = this;
 
 	if (self.canMove && self.layer.x > 200) {
-		self.layer.x -= 20;
+		LTweenLite.to(self.layer, 0.5, {
+			x: 235,
+			ease: LEasing.Strong.easeInOut,
+			onUpdate: function() {
+				self.setDirection();
+			}
+		});
 	}
 };
 
@@ -83,6 +89,12 @@ Car.prototype.moveToRight = function(event) {
 	var self = this;
 
 	if (self.canMove && self.layer.x < 440) {
-		self.layer.x += 20;
+		LTweenLite.to(self.layer, 0.5, {
+			x: 405,
+			ease: LEasing.Strong.easeInOut,
+			onUpdate: function() {
+				self.setDirection();
+			}
+		});
 	}
 };

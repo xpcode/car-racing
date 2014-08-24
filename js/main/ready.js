@@ -1,12 +1,11 @@
-function Ready(resources, callback) {
+function Ready(resources, setOilMass, start) {
 	var self = this;
 
 	base(self, LSprite, []);
 
 	self.resources = resources;
-	self.callback = callback || function() {
-		alert('miss start function.')
-	};
+	self.start = start;
+	self.setOilMass = setOilMass;
 	self.clickCount = 0;
 
 	self.init();
@@ -41,18 +40,19 @@ Ready.prototype.init = function() {
 		setTimeout(function() {
 			LGlobal.stage.removeAllEventListener();
 			self._clickScreen();
-		}, 1 * 1000);
+		}, 0 * 1000);
 
 		// 点击屏幕开始计点击次数
 		LGlobal.stage.addEventListener(LMouseEvent.MOUSE_DOWN, function() {
 			self.clickCount++;
+			self.setOilMass(self.clickCount);
 		});
 	});
 };
 
 Ready.prototype._clickScreen = function() {
 	var self = this;
-	var names = [];//'time_3', 'time_2', 'time_1', 'time_go'];
+	var names = []; //'time_3', 'time_2', 'time_1', 'time_go'];
 	var index = 0;
 
 	var intervalId = window.setInterval(function() {
@@ -72,7 +72,7 @@ Ready.prototype._clickScreen = function() {
 
 			self.layer.removeAllChild();
 			self.removeChild(self.layer);
-			self.callback(self.clickCount+110);
+			self.start(self.clickCount + 110);
 
 		}
 	}, 1000);

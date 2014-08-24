@@ -8,8 +8,6 @@ function Main(resources) {
 	// 游戏主体对象
 	self.gameBody = null;
 
-	// 默认油耗（默认小数点后6位）（5.9L/100km）
-	self.DEFAULT_OIL_WEAR = 0.08 / game.interval;
 	// 移动速度（默认匀速 80KM/h）（对应背景后退速度）
 	self.DEFAULT_SPEED = 80;
 }
@@ -34,7 +32,7 @@ Main.prototype.init = function() {
 	// 扔道具的下一个时间戳
 	self.throwTicks = Date.now();
 	// 当前油耗（默认小数点后6位）（获得节油器会降低当前油耗值）
-	self.oilWear = self.DEFAULT_OIL_WEAR_SECOND;
+	self.oilWear = 5.9;
 	// 通过开始10秒钟的点击获得的油量
 	self.oilMassObtained = 0;
 	// 当前还剩下多少L油（默认小数点后1位）
@@ -47,7 +45,9 @@ Main.prototype.init = function() {
 	self.car = new Car(self.resources);
 	self.addChild(self.car);
 
-	self.ready = new Ready(self.resources, self._start);
+	self.ready = new Ready(self.resources, function(){
+		self.background.setOilMass(5);
+	}, self._start);
 	self.addChild(self.ready);
 };
 
@@ -76,21 +76,15 @@ Main.prototype._onMouseDown = function(event) {
 		} else {
 			self.car.moveToRight();
 		}
-		self.car.setDirection();
 	}
 }
 
 Main.prototype._onFrame = function(event) {
 	var self = Main._instance;
 
-	self.oilMassLeave -= self.DEFAULT_OIL_WEAR;
+	self.oilMassLeave -= self.oilWear / (60 * game.interval);
 
 	if (self.oilMassLeave > 0) {
-		// 显示已经跑了多少距离
-		self.background.setDistance(self._getDistance());
-		// 显示剩余油量
-		self.background.setQtrip(self.oilMassLeave.toFixed(2));
-
 		self.background.backup();
 
 		for (var p in self.props) {
@@ -98,7 +92,15 @@ Main.prototype._onFrame = function(event) {
 				continue;
 
 			var _prop = self.props[p];
-			if (_prop.getCoord().y > 320 || LGlobal.hitTestPolygon(self.car.getCoords(), _prop.getCoords())) {
+			if (LGlobal.hitTestPolygon(self.car.getCoords(), _prop.getCoords())) {
+				self.removeChild(_prop);
+
+				self.props[p] = null;
+				delete self.props[p];
+
+				self.oilWear -= self.oilWear * 0.05;
+
+			} else if (_prop.getCoord().y > LGlobal.height - 100) {
 				self.removeChild(_prop);
 
 				self.props[p] = null;
@@ -114,6 +116,11 @@ Main.prototype._onFrame = function(event) {
 
 			self.props[self.throwTicks] = prop;
 		}
+
+		// 显示已经跑了多少距离
+		self.background.setDistance(self._getDistance());
+		// 显示当前油耗
+		self.background.setQtrip(self.oilWear.toFixed(2));
 
 	} else {
 		self.car.setCanMove(false);
