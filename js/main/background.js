@@ -29,6 +29,8 @@ Background.prototype.init = function() {
 	self.addChild(self.layer2_l);
 	self.layer2_l_stat = new LSprite();
 	self.addChild(self.layer2_l_stat);
+	self.layer2_l_hourse = new LSprite();
+	self.addChild(self.layer2_l_hourse);
 	// 中间
 	self.layer2_m = new LSprite();
 	self.addChild(self.layer2_m);
@@ -49,10 +51,12 @@ Background.prototype.init = function() {
 	self._genHourses();
 
 	// 油桶
-	var gas = new LBitmap(new LBitmapData(self.resources["gas"]));
-	gas.x = 230;
-	gas.y = LGlobal.height - gas.height - 10;
-	self.layer3.addChild(gas);
+	self.gas = new LBitmap(new LBitmapData(self.resources["gas"]));
+	self.gas.x = 230;
+	self.gas.y = LGlobal.height - self.gas.height - 10;
+	self.layer3.addChild(self.gas);
+
+	self.setOilMass(0);
 };
 
 Background.prototype._genRoadtips = function() {
@@ -79,7 +83,51 @@ Background.prototype._genRoadtips = function() {
 	self.layer2_m.y = LGlobal.height - self.layer2_m.getHeight();
 };
 
-Background.prototype._genHourses = function() {};
+Background.prototype._genHourses = function() {
+	var self = this;
+	var imgs = {
+		// building_l0: [0, 0],
+		building_l1: [200, -30],
+		// building_l2: [150, 10],
+		// building_l3: [30, 40],
+		// building_l4: [40, 50],
+		// building_l5: [50, 60],
+		// building_l6: [60, 70],
+		// building_l7: [70, 80]
+	};
+	var pStart = {
+			x: 308,
+			y: 0
+		},
+		pEnd = {
+			x: 63,
+			y: LGlobal.height
+		};
+
+	for (var p in imgs) {
+		var arr = imgs[p];
+		var bmap = new LBitmap(new LBitmapData(self.resources[p]));
+		var width = bmap.width;
+		var height = bmap.height;
+
+		var layer = new LSprite();
+		layer.addChild(bmap);
+		layer.scaleX = 0.5;
+		layer.scaleY = 0.5;
+		layer.x = pStart.x - width * layer.scaleX;
+		layer.y = pStart.y - height * layer.scaleY;
+		self.layer2_l_hourse.addChild(layer);
+		// continue;
+		LTweenLite.to(layer, 5, {
+			y: LGlobal.height,
+			scaleX: 1,
+			scaleY: 1,
+			x: pStart.x - (LGlobal.height * (pStart.x - pEnd.x)) / height,
+			y: pEnd.y + height,
+			ease: LEasing.Strong.easeIn
+		});
+	}
+};
 
 Background.prototype._getResourceName = function(num) {
 	return {
@@ -116,9 +164,12 @@ Background.prototype.setDistance = function(distance) {
 		if (name.length > 0) {
 			bmap = new LBitmap(new LBitmapData(self.resources[name]));
 			bmap.x = x;
+			if (arr[i] == '.') {
+				bmap.y = 23;
+			}
 			self.layer2_r_stat.addChild(bmap);
 
-			x += bmap.width;
+			x += bmap.width - 5;
 		}
 	}
 
@@ -143,9 +194,12 @@ Background.prototype.setQtrip = function(qtrip) {
 		if (name.length > 0) {
 			bmap = new LBitmap(new LBitmapData(self.resources[name]));
 			bmap.x = x;
+			if (arr[i] == '.') {
+				bmap.y = 23;
+			}
 			self.layer2_l_stat.addChild(bmap);
 
-			x += bmap.width;
+			x += bmap.width - 5;
 		}
 	}
 
@@ -153,23 +207,36 @@ Background.prototype.setQtrip = function(qtrip) {
 	self.layer2_l_stat.y = 20;
 };
 
-Background.prototype.setOilMass = function(oilmass) {
+Background.prototype.setOilMass = function(clickCount) {
 	var self = this;
+	var max_x = self.gas.x + 5;
+	var max_y = 10 - self.gas.height;
+	var scale = clickCount / 8;
+
+	var layer = new LSprite();
+	layer.x = 300;
+	layer.y = LGlobal.height - layer.height - 12;
+	self.addChild(layer);
 
 	var shape = new LShape();
-	self.layer2_m.addChild(shape);
-
-	shape.graphics.drawVertices(2, "ff2842", [
-		[130, 200],
-		[430, 300],
-		[130, 300]
+	shape.graphics.fillStyle("#fff156");
+	shape.graphics.drawVertices(3, "ff2842", [
+		[0, 0],
+		[max_x, 0],
+		[max_x, max_y]
 	]);
-	shape.graphics.drawVertices(2, "fff156", [
-		[10, 160],
-		[60, 250],
-		[100, 200]
-	], true, "#880088");
+	shape.graphics.fill();
+	layer.addChild(shape);
 
+	var shape_2 = new LShape();
+	shape_2.graphics.fillStyle("#ff2842");
+	shape_2.graphics.drawVertices(0, "ff2842", [
+		[0, 0],
+		[max_x * scale, 0],
+		[max_x * scale, max_y * scale]
+	]);
+	shape_2.graphics.fill();
+	layer.addChild(shape_2);
 };
 
 Background.prototype.backup = function() {

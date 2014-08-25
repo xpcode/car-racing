@@ -25,6 +25,7 @@ Prop.prototype.init = function() {
 	self.layer.scaleX = 0.2;
 	self.layer.scaleY = 0.2;
 	self.layer.addChild(bmap);
+
 	LTweenLite.to(self.layer, 5, {
 		y: LGlobal.height,
 		scaleX: 1.2,

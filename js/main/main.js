@@ -45,17 +45,16 @@ Main.prototype.init = function() {
 	self.car = new Car(self.resources);
 	self.addChild(self.car);
 
-	self.ready = new Ready(self.resources, function(){
-		self.background.setOilMass(5);
+	self.ready = new Ready(self.resources, function(clickCount) {
+		self.oilMassObtained = self._getOilMassObtained(clickCount);
+		self.oilMassLeave = self.oilMassObtained;
+		self.background.setOilMass(self.oilMassLeave);
 	}, self._start);
 	self.addChild(self.ready);
 };
 
-Main.prototype._start = function(clickCount) {
+Main.prototype._start = function() {
 	var self = Main._instance;
-
-	self.oilMassObtained = self._getOilMassObtained(clickCount);
-	self.oilMassLeave = self.oilMassObtained;
 
 	// 移除开始界面
 	self.removeChild(self.ready);
@@ -65,6 +64,10 @@ Main.prototype._start = function(clickCount) {
 	self.addEventListener(LMouseEvent.MOUSE_DOWN, self._onMouseDown);
 
 	self.car.setCanMove(true);
+
+	if (!!game.debug) {
+		self.oilMassObtained = self.oilMassLeave = 3;
+	}
 };
 
 Main.prototype._onMouseDown = function(event) {
@@ -121,6 +124,7 @@ Main.prototype._onFrame = function(event) {
 		self.background.setDistance(self._getDistance());
 		// 显示当前油耗
 		self.background.setQtrip(self.oilWear.toFixed(2));
+		self.background.setOilMass(self.oilMassLeave);
 
 	} else {
 		self.car.setCanMove(false);
@@ -138,7 +142,7 @@ Main.prototype._getDistance = function() {
 	var self = this;
 
 	// 标准平均油耗为5.9L/100km
-	return (((self.oilMassObtained - self.oilMassLeave) * 100) / 5.9).toFixed(4);
+	return (((self.oilMassObtained - self.oilMassLeave) * 100) / 5.9).toFixed(3);
 };
 
 // 计算获得的油量

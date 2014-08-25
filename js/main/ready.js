@@ -40,7 +40,7 @@ Ready.prototype.init = function() {
 		setTimeout(function() {
 			LGlobal.stage.removeAllEventListener();
 			self._clickScreen();
-		}, 0 * 1000);
+		}, (!!game.debug ? 0 : 10 * 1000));
 
 		// 点击屏幕开始计点击次数
 		LGlobal.stage.addEventListener(LMouseEvent.MOUSE_DOWN, function() {
@@ -52,7 +52,7 @@ Ready.prototype.init = function() {
 
 Ready.prototype._clickScreen = function() {
 	var self = this;
-	var names = []; //'time_3', 'time_2', 'time_1', 'time_go'];
+	var names = !!game.debug ? [] : ['time_3', 'time_2', 'time_1', 'time_go'];
 	var index = 0;
 
 	var intervalId = window.setInterval(function() {
