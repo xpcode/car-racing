@@ -3,7 +3,7 @@ function Background(resources) {
 
 	base(self, LSprite, []);
 
-	self.DEFAULT_SPEED = 22;
+	self.DEFAULT_SPEED = 18;
 	// 马路速度
 	// 其他的速度=马路速度*转换率
 	self.speed = self.DEFAULT_SPEED;
@@ -64,6 +64,15 @@ Background.prototype.init = function() {
 	self.bg_right.x = 490;
 	self.bg_right.y = -50;
 	self.layer1.addChild(self.bg_right);
+	var bg_right_2 = self.bg_right.clone();
+	bg_right_2.y = -(self.bg_right.getHeight() + 50);
+	bg_right_2.x = 210;
+	self.layer1.addChild(bg_right_2);
+
+	self.bgLayersRight = {
+		a: self.bg_right,
+		b: bg_right_2
+	};
 
 	// 两侧的房子、树和马路中间虚线
 	self._genRoadtips();
@@ -93,6 +102,21 @@ Background.prototype._onFrame = function(event) {
 		if (layer.y >= LGlobal.height - 50) {
 			layer.y = -(self.bmap_left.getHeight() + 50);
 			layer.x = 80;
+		}
+	}
+
+	for (var p in self.bgLayersRight) {
+		if (!self.bgLayersRight.hasOwnProperty(p))
+			continue;
+
+		var layer = self.bgLayersRight[p];
+
+		layer.y += self.speed;
+		layer.x += (self.speed * 240) / LGlobal.height;
+
+		if (layer.y >= LGlobal.height - 50) {
+			layer.y = -(self.bg_right.getHeight() + 50);
+			layer.x = 210;
 		}
 	}
 	self.backup();
@@ -297,7 +321,7 @@ Background.prototype.setCanMove = function(canMove) {
 	} else {
 		self.removeEventListener(LEvent.ENTER_FRAME, self._onFrame);
 	}
-}
+};
 
 Background.prototype.backup = function() {
 	var self = this;
