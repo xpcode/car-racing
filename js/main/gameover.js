@@ -14,6 +14,13 @@ GameOver.prototype.init = function() {
 	self.layer = new LSprite();
 	self.addChild(self.layer);
 
+
+	var shape = new LShape();
+    addChild(shape);
+    shape.graphics.drawRect(2, "#ff0000", [10, 10, 50, 100], true, "#880088");
+
+    return;
+
 	var bitmap = new LBitmap(new LBitmapData(self.resources['end']));
 
 	self.layer.x = (LGlobal.width - bitmap.width) / 2;

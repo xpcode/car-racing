@@ -46,9 +46,28 @@ Background.prototype.init = function() {
 	// 背景图
 	self.layer1.addChild(new LBitmap(new LBitmapData(self.resources["bg"])));
 
+	self.bmap_left = new LBitmap(new LBitmapData(self.resources["bg_left"]));
+	self.bmap_left.y = -50;
+	self.bmap_left.x = -200;
+	self.layer1.addChild(self.bmap_left);
+	var bmap_left_2 = self.bmap_left.clone();
+	bmap_left_2.y = -(self.bmap_left.getHeight() + 50);
+	bmap_left_2.x = 80;
+	self.layer1.addChild(bmap_left_2);
+
+	self.bgLayers = {
+		a: self.bmap_left,
+		b: bmap_left_2
+	};
+
+	self.bg_right = new LBitmap(new LBitmapData(self.resources["bg_right"]));
+	self.bg_right.x = 490;
+	self.bg_right.y = -50;
+	self.layer1.addChild(self.bg_right);
+
 	// 两侧的房子、树和马路中间虚线
 	self._genRoadtips();
-	self._genHourses();
+	// self._genHourses();
 
 	// 油桶
 	self.gas = new LBitmap(new LBitmapData(self.resources["gas"]));
@@ -57,6 +76,26 @@ Background.prototype.init = function() {
 	self.layer3.addChild(self.gas);
 
 	self.setOilMass(0);
+};
+
+Background.prototype._onFrame = function(event) {
+	var self = event.target;
+
+	for (var p in self.bgLayers) {
+		if (!self.bgLayers.hasOwnProperty(p))
+			continue;
+
+		var layer = self.bgLayers[p];
+
+		layer.y += self.speed;
+		layer.x -= (self.speed * 245) / LGlobal.height;
+
+		if (layer.y >= LGlobal.height - 50) {
+			layer.y = -(self.bmap_left.getHeight() + 50);
+			layer.x = 80;
+		}
+	}
+	self.backup();
 };
 
 Background.prototype._genRoadtips = function() {
@@ -85,6 +124,25 @@ Background.prototype._genRoadtips = function() {
 
 Background.prototype._genHourses = function() {
 	var self = this;
+	var pStart = {
+			x: 308,
+			y: 0
+		},
+		pEnd = {
+			x: 63,
+			y: LGlobal.height
+		};
+
+	var layer___ = new LSprite();
+	self.addChild(layer___);
+	layer___.x = -200;
+	layer___.y = -50;
+	layer___.addChild(new LBitmap(new LBitmapData(self.resources["bg_left"])));
+
+	return;
+
+
+
 	var imgs = {
 		// building_l0: [0, 0],
 		building_l1: [200, -30],
@@ -95,14 +153,6 @@ Background.prototype._genHourses = function() {
 		// building_l6: [60, 70],
 		// building_l7: [70, 80]
 	};
-	var pStart = {
-			x: 308,
-			y: 0
-		},
-		pEnd = {
-			x: 63,
-			y: LGlobal.height
-		};
 
 	for (var p in imgs) {
 		var arr = imgs[p];
@@ -238,6 +288,16 @@ Background.prototype.setOilMass = function(clickCount) {
 	shape_2.graphics.fill();
 	layer.addChild(shape_2);
 };
+
+Background.prototype.setCanMove = function(canMove) {
+	var self = this;
+
+	if (canMove === true) {
+		self.addEventListener(LEvent.ENTER_FRAME, self._onFrame);
+	} else {
+		self.removeEventListener(LEvent.ENTER_FRAME, self._onFrame);
+	}
+}
 
 Background.prototype.backup = function() {
 	var self = this;

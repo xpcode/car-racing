@@ -38,6 +38,12 @@ Main.prototype.init = function() {
 	// 当前还剩下多少L油（默认小数点后1位）
 	self.oilMassLeave = self.oilMassObtained;
 
+	// self.gameOver = new GameOver(self.resources, function() {
+	// 	self.init();
+	// });
+	// self.addChild(self.gameOver);
+	// return;
+
 	// 初始化游戏背景
 	self.background = new Background(self.resources);
 	self.addChild(self.background);
@@ -64,6 +70,7 @@ Main.prototype._start = function() {
 	self.addEventListener(LMouseEvent.MOUSE_DOWN, self._onMouseDown);
 
 	self.car.setCanMove(true);
+	self.background.setCanMove(true);
 
 	if (!!game.debug) {
 		self.oilMassObtained = self.oilMassLeave = 3;
@@ -85,11 +92,9 @@ Main.prototype._onMouseDown = function(event) {
 Main.prototype._onFrame = function(event) {
 	var self = Main._instance;
 
-	self.oilMassLeave -= self.oilWear / (60 * game.interval);
+	self.oilMassLeave -= self.oilWear / (20 * game.interval);
 
 	if (self.oilMassLeave > 0) {
-		self.background.backup();
-
 		for (var p in self.props) {
 			if (!self.props.hasOwnProperty(p))
 				continue;
