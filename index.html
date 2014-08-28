@@ -9,10 +9,10 @@
 	<script type="text/javascript">
 
 	var game = {
-		debug: true,
+		debug: false,
 
 		// 刷新间隔，毫秒数
-		interval: 50,
+		interval: 20,
 
 		// 画布宽度、高度
 		width: 800,
@@ -215,7 +215,8 @@
 			loading.setProgress(progress);
 
 		}, function(result){
-			removeChild(loading);
+			loading.remove();
+			loading.die();
 			loading = null;
 			delete loading;
 

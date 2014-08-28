@@ -57,6 +57,10 @@ Main.prototype.init = function() {
 		self.background.setOilMass(self.oilMassLeave);
 	}, self._start);
 	self.addChild(self.ready);
+
+	if (game.debug) {
+		addChild(new FPS());
+	}
 };
 
 Main.prototype._start = function() {
@@ -92,7 +96,7 @@ Main.prototype._onMouseDown = function(event) {
 Main.prototype._onFrame = function(event) {
 	var self = Main._instance;
 
-	self.oilMassLeave -= self.oilWear / (20 * game.interval);
+	self.oilMassLeave -= self.oilWear / (30 * 50);
 
 	if (self.oilMassLeave > 0) {
 		for (var p in self.props) {
@@ -101,7 +105,8 @@ Main.prototype._onFrame = function(event) {
 
 			var _prop = self.props[p];
 			if (LGlobal.hitTestPolygon(self.car.getCoords(), _prop.getCoords())) {
-				self.removeChild(_prop);
+				_prop.remove();
+				_prop.die();
 
 				self.props[p] = null;
 				delete self.props[p];
@@ -109,7 +114,8 @@ Main.prototype._onFrame = function(event) {
 				self.oilWear -= self.oilWear * 0.05;
 
 			} else if (_prop.getCoord().y > LGlobal.height - 100) {
-				self.removeChild(_prop);
+				_prop.remove();
+				_prop.die();
 
 				self.props[p] = null;
 				delete self.props[p];
@@ -132,6 +138,7 @@ Main.prototype._onFrame = function(event) {
 		self.background.setOilMass(self.oilMassLeave);
 
 	} else {
+		self.background.setCanMove(false);
 		self.car.setCanMove(false);
 		self.gameOver = new GameOver(self.resources, function() {
 			self.init();

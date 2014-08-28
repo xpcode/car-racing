@@ -4,9 +4,7 @@ function Background(resources) {
 	base(self, LSprite, []);
 
 	self.DEFAULT_SPEED = 18;
-	// 马路速度
-	// 其他的速度=马路速度*转换率
-	self.speed = self.DEFAULT_SPEED;
+
 	self.resources = resources;
 
 	self.init();
@@ -21,68 +19,33 @@ function Background(resources) {
 Background.prototype.init = function() {
 	var self = this;
 
+	// 马路速度
+	self.speed = self.DEFAULT_SPEED;
+
 	// 背景
 	self.layer1 = new LSprite();
 	self.addChild(self.layer1);
 	// 左侧
 	self.layer2_l = new LSprite();
 	self.addChild(self.layer2_l);
-	self.layer2_l_stat = new LSprite();
-	self.addChild(self.layer2_l_stat);
-	self.layer2_l_hourse = new LSprite();
-	self.addChild(self.layer2_l_hourse);
 	// 中间
 	self.layer2_m = new LSprite();
 	self.addChild(self.layer2_m);
 	// 右侧
 	self.layer2_r = new LSprite();
 	self.addChild(self.layer2_r);
-	self.layer2_r_stat = new LSprite();
-	self.addChild(self.layer2_r_stat);
 	// 散件
 	self.layer3 = new LSprite();
 	self.addChild(self.layer3);
 
 	// 背景图
-	self.layer1.addChild(new LBitmap(new LBitmapData(self.resources["bg"])));
-
-	self.bmap_left = new LBitmap(new LBitmapData(self.resources["bg_left"]));
-	self.bmap_left.y = -50;
-	self.bmap_left.x = -200;
-	self.layer1.addChild(self.bmap_left);
-	var bmap_left_2 = self.bmap_left.clone();
-	bmap_left_2.y = -(self.bmap_left.getHeight() + 50);
-	bmap_left_2.x = 80;
-	self.layer1.addChild(bmap_left_2);
-
-	self.bgLayers = {
-		a: self.bmap_left,
-		b: bmap_left_2
-	};
-
-	self.bg_right = new LBitmap(new LBitmapData(self.resources["bg_right"]));
-	self.bg_right.x = 490;
-	self.bg_right.y = -50;
-	self.layer1.addChild(self.bg_right);
-	var bg_right_2 = self.bg_right.clone();
-	bg_right_2.y = -(self.bg_right.getHeight() + 50);
-	bg_right_2.x = 210;
-	self.layer1.addChild(bg_right_2);
-
-	self.bgLayersRight = {
-		a: self.bg_right,
-		b: bg_right_2
-	};
+	self._genBg();
 
 	// 两侧的房子、树和马路中间虚线
 	self._genRoadtips();
-	// self._genHourses();
 
 	// 油桶
-	self.gas = new LBitmap(new LBitmapData(self.resources["gas"]));
-	self.gas.x = 230;
-	self.gas.y = LGlobal.height - self.gas.height - 10;
-	self.layer3.addChild(self.gas);
+	self._genGas();
 
 	self.setOilMass(0);
 };
@@ -90,36 +53,54 @@ Background.prototype.init = function() {
 Background.prototype._onFrame = function(event) {
 	var self = event.target;
 
-	for (var p in self.bgLayers) {
-		if (!self.bgLayers.hasOwnProperty(p))
-			continue;
+	self.bg_left.y += self.speed;
+	self.bg_left.x -= (self.speed * 245) / LGlobal.height;
 
-		var layer = self.bgLayers[p];
-
-		layer.y += self.speed;
-		layer.x -= (self.speed * 245) / LGlobal.height;
-
-		if (layer.y >= LGlobal.height - 50) {
-			layer.y = -(self.bmap_left.getHeight() + 50);
-			layer.x = 80;
-		}
+	if (self.bg_left.y > 80) {
+		self.bg_left.x = -200;
+		self.bg_left.y = -510;
 	}
 
-	for (var p in self.bgLayersRight) {
-		if (!self.bgLayersRight.hasOwnProperty(p))
-			continue;
 
-		var layer = self.bgLayersRight[p];
+	self.bg_right.y += self.speed;
+	self.bg_right.x += (self.speed * 240) / LGlobal.height;
 
-		layer.y += self.speed;
-		layer.x += (self.speed * 240) / LGlobal.height;
-
-		if (layer.y >= LGlobal.height - 50) {
-			layer.y = -(self.bg_right.getHeight() + 50);
-			layer.x = 210;
-		}
+	if (self.bg_right.y > 80) {
+		self.bg_right.x = 230;
+		self.bg_right.y = -540;
 	}
-	self.backup();
+
+	// 马路后退
+	if (self.layer2_m.y > -LGlobal.width) {
+		self.layer2_m.y = LGlobal.height - self.layer2_m.getHeight();
+	}
+
+	self.layer2_m.y += self.speed;
+};
+
+Background.prototype._genGas = function() {
+	var self = this;
+
+	self.gas = new LBitmap(new LBitmapData(self.resources["gas"]));
+	self.gas.x = 230;
+	self.gas.y = LGlobal.height - self.gas.height - 10;
+	self.layer3.addChild(self.gas);
+};
+
+Background.prototype._genBg = function() {
+	var self = this;
+
+	self.layer1.addChild(new LBitmap(new LBitmapData(self.resources["bg"])));
+	// 左侧房子
+	self.bg_left = new LBitmap(new LBitmapData(self.resources["bg_left"]));
+	self.bg_left.x = -200;
+	self.bg_left.y = -510;
+	self.layer1.addChild(self.bg_left);
+	// 左侧房子
+	self.bg_right = new LBitmap(new LBitmapData(self.resources["bg_right"]));
+	self.bg_right.x = 230;
+	self.bg_right.y = -540;
+	self.layer1.addChild(self.bg_right);
 };
 
 Background.prototype._genRoadtips = function() {
@@ -146,63 +127,6 @@ Background.prototype._genRoadtips = function() {
 	self.layer2_m.y = LGlobal.height - self.layer2_m.getHeight();
 };
 
-Background.prototype._genHourses = function() {
-	var self = this;
-	var pStart = {
-			x: 308,
-			y: 0
-		},
-		pEnd = {
-			x: 63,
-			y: LGlobal.height
-		};
-
-	var layer___ = new LSprite();
-	self.addChild(layer___);
-	layer___.x = -200;
-	layer___.y = -50;
-	layer___.addChild(new LBitmap(new LBitmapData(self.resources["bg_left"])));
-
-	return;
-
-
-
-	var imgs = {
-		// building_l0: [0, 0],
-		building_l1: [200, -30],
-		// building_l2: [150, 10],
-		// building_l3: [30, 40],
-		// building_l4: [40, 50],
-		// building_l5: [50, 60],
-		// building_l6: [60, 70],
-		// building_l7: [70, 80]
-	};
-
-	for (var p in imgs) {
-		var arr = imgs[p];
-		var bmap = new LBitmap(new LBitmapData(self.resources[p]));
-		var width = bmap.width;
-		var height = bmap.height;
-
-		var layer = new LSprite();
-		layer.addChild(bmap);
-		layer.scaleX = 0.5;
-		layer.scaleY = 0.5;
-		layer.x = pStart.x - width * layer.scaleX;
-		layer.y = pStart.y - height * layer.scaleY;
-		self.layer2_l_hourse.addChild(layer);
-		// continue;
-		LTweenLite.to(layer, 5, {
-			y: LGlobal.height,
-			scaleX: 1,
-			scaleY: 1,
-			x: pStart.x - (LGlobal.height * (pStart.x - pEnd.x)) / height,
-			y: pEnd.y + height,
-			ease: LEasing.Strong.easeIn
-		});
-	}
-};
-
 Background.prototype._getResourceName = function(num) {
 	return {
 		'1': 'number_1',
@@ -221,6 +145,7 @@ Background.prototype._getResourceName = function(num) {
 	}[num] || '';
 };
 
+// 设置跑了多少KM
 Background.prototype.setDistance = function(distance) {
 	var self = this;
 	var arr = String(distance).split('').concat(['km']);
@@ -230,7 +155,7 @@ Background.prototype.setDistance = function(distance) {
 		bmap = null,
 		x = 0;
 
-	self.layer2_r_stat.removeAllChild();
+	self.layer2_r.removeAllChild();
 
 	for (; i < len; i++) {
 		name = this._getResourceName(arr[i]);
@@ -241,16 +166,17 @@ Background.prototype.setDistance = function(distance) {
 			if (arr[i] == '.') {
 				bmap.y = 23;
 			}
-			self.layer2_r_stat.addChild(bmap);
+			self.layer2_r.addChild(bmap);
 
 			x += bmap.width - 5;
 		}
 	}
 
-	self.layer2_r_stat.x = LGlobal.width - self.layer2_r_stat.getWidth() - 20;
-	self.layer2_r_stat.y = 20;
+	self.layer2_r.x = LGlobal.width - self.layer2_r.getWidth() - 20;
+	self.layer2_r.y = 20;
 };
 
+// 设置当前油耗
 Background.prototype.setQtrip = function(qtrip) {
 	var self = this;
 	var arr = String(qtrip).split('').concat(['dw']);
@@ -260,7 +186,7 @@ Background.prototype.setQtrip = function(qtrip) {
 		bmap = null,
 		x = 0;
 
-	self.layer2_l_stat.removeAllChild();
+	self.layer2_l.removeAllChild();
 
 	for (; i < len; i++) {
 		name = this._getResourceName(arr[i]);
@@ -271,48 +197,58 @@ Background.prototype.setQtrip = function(qtrip) {
 			if (arr[i] == '.') {
 				bmap.y = 23;
 			}
-			self.layer2_l_stat.addChild(bmap);
+			self.layer2_l.addChild(bmap);
 
 			x += bmap.width - 5;
 		}
 	}
 
-	self.layer2_l_stat.x = 160;
-	self.layer2_l_stat.y = 20;
+	self.layer2_l.x = 160;
+	self.layer2_l.y = 20;
 };
 
+// 设置油量
 Background.prototype.setOilMass = function(clickCount) {
-	var self = this;
-	var max_x = self.gas.x + 5;
-	var max_y = 10 - self.gas.height;
-	var scale = clickCount / 8;
+	var self = this,
+		scale = clickCount / 6,
+		max_x = self.gas.x + 5,
+		max_y = 10 - self.gas.height;
 
-	var layer = new LSprite();
-	layer.x = 300;
-	layer.y = LGlobal.height - layer.height - 12;
-	self.addChild(layer);
+	if (!self.layerOilMass) {
+		self.layerOilMass = new LSprite();
+		self.layerOilMass.x = 300;
+		self.layerOilMass.y = LGlobal.height - self.layerOilMass.height - 12;
+		self.addChild(self.layerOilMass);
 
-	var shape = new LShape();
-	shape.graphics.fillStyle("#fff156");
-	shape.graphics.drawVertices(3, "ff2842", [
-		[0, 0],
-		[max_x, 0],
-		[max_x, max_y]
-	]);
-	shape.graphics.fill();
-	layer.addChild(shape);
+		var shape = new LShape();
+		shape.graphics.fillStyle("#fff156");
+		shape.graphics.drawVertices(3, "ff2842", [
+			[0, 0],
+			[max_x, 0],
+			[max_x, max_y]
+		]);
+		shape.graphics.fill();
+		self.layerOilMass.addChild(shape);
+	}
 
-	var shape_2 = new LShape();
-	shape_2.graphics.fillStyle("#ff2842");
-	shape_2.graphics.drawVertices(0, "ff2842", [
+	if (self.shapOilMassLeave) {
+		self.shapOilMassLeave.remove();
+		self.shapOilMassLeave.die();
+	}
+
+	self.shapOilMassLeave = new LShape();
+	self.shapOilMassLeave.graphics.fillStyle("#ff2842");
+	self.shapOilMassLeave.graphics.drawVertices(0, "ff2842", [
 		[0, 0],
 		[max_x * scale, 0],
 		[max_x * scale, max_y * scale]
 	]);
-	shape_2.graphics.fill();
-	layer.addChild(shape_2);
+	self.shapOilMassLeave.graphics.fill();
+
+	self.layerOilMass.addChild(self.shapOilMassLeave);
 };
 
+// 设置背景是否开始移动
 Background.prototype.setCanMove = function(canMove) {
 	var self = this;
 
@@ -321,15 +257,4 @@ Background.prototype.setCanMove = function(canMove) {
 	} else {
 		self.removeEventListener(LEvent.ENTER_FRAME, self._onFrame);
 	}
-};
-
-Background.prototype.backup = function() {
-	var self = this;
-
-	// 马路后退
-	if (self.layer2_m.y > -LGlobal.width) {
-		self.layer2_m.y = LGlobal.height - self.layer2_m.getHeight();
-	}
-
-	self.layer2_m.y += self.speed;
 };

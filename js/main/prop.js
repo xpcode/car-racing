@@ -16,7 +16,8 @@ Prop.prototype.init = function() {
 	self.layer = new LSprite();
 	self.layer.name = 'jyq';
 	self.layer.target = self.layer;
-	self.layer.x = Math.random() * LGlobal.width;
+
+	self.layer.x = (LGlobal.width - 240 * 2) * Math.random() + 240;
 	self.addChild(self.layer);
 
 	var name = Math.random() > 0.5 ? 'jyq1' : 'jyq2';
