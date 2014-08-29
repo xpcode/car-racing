@@ -5,11 +5,6 @@ function Main(resources) {
 
 	// 资源列表
 	self.resources = resources;
-	// 游戏主体对象
-	self.gameBody = null;
-
-	// 移动速度（默认匀速 80KM/h）（对应背景后退速度）
-	self.DEFAULT_SPEED = 80;
 }
 
 Main.prototype.init = function() {
@@ -19,18 +14,6 @@ Main.prototype.init = function() {
 	self.removeAllEventListener();
 	self.removeAllChild();
 
-	// 清除节油器
-	for (var p in self.props) {
-		if (!self.props.hasOwnProperty(p))
-			continue;
-
-		self.removeChild(self.props[p]);
-	}
-
-	// 当前投放的节油器对象
-	self.props = {};
-	// 扔道具的下一个时间戳
-	self.throwTicks = Date.now();
 	// 当前油耗（默认小数点后6位）（获得节油器会降低当前油耗值）
 	self.oilWear = 5.9;
 	// 通过开始10秒钟的点击获得的油量
@@ -54,6 +37,7 @@ Main.prototype.init = function() {
 	self.ready = new Ready(self.resources, function(clickCount) {
 		self.oilMassObtained = self._getOilMassObtained(clickCount);
 		self.oilMassLeave = self.oilMassObtained;
+		// 显示点击屏幕获得的油量
 		self.background.setOilMass(self.oilMassLeave);
 	}, self._start);
 	self.addChild(self.ready);
@@ -73,8 +57,15 @@ Main.prototype._start = function() {
 	self.addEventListener(LEvent.ENTER_FRAME, self._onFrame);
 	self.addEventListener(LMouseEvent.MOUSE_DOWN, self._onMouseDown);
 
+	// 当前投放的节油器对象
+	self.prop = new Prop(self.resources, self.car, function() {
+		self.oilWear -= self.oilWear * 0.05;
+	});
+	self.addChild(self.prop);
+
 	self.car.setCanMove(true);
 	self.background.setCanMove(true);
+	self.prop.setCanMove(true);
 
 	if (!!game.debug) {
 		self.oilMassObtained = self.oilMassLeave = 3;
@@ -91,7 +82,7 @@ Main.prototype._onMouseDown = function(event) {
 			self.car.moveToRight();
 		}
 	}
-}
+};
 
 Main.prototype._onFrame = function(event) {
 	var self = Main._instance;
@@ -99,47 +90,18 @@ Main.prototype._onFrame = function(event) {
 	self.oilMassLeave -= self.oilWear / (30 * 50);
 
 	if (self.oilMassLeave > 0) {
-		for (var p in self.props) {
-			if (!self.props.hasOwnProperty(p))
-				continue;
-
-			var _prop = self.props[p];
-			if (LGlobal.hitTestPolygon(self.car.getCoords(), _prop.getCoords())) {
-				_prop.remove();
-				_prop.die();
-
-				self.props[p] = null;
-				delete self.props[p];
-
-				self.oilWear -= self.oilWear * 0.05;
-
-			} else if (_prop.getCoord().y > LGlobal.height - 100) {
-				_prop.remove();
-				_prop.die();
-
-				self.props[p] = null;
-				delete self.props[p];
-			}
-		}
-
-		if (Date.now() >= self.throwTicks) {
-			var prop = new Prop(self.resources);
-			self.addChild(prop);
-
-			self.throwTicks += Math.ceil(8000 * Math.random());
-
-			self.props[self.throwTicks] = prop;
-		}
-
 		// 显示已经跑了多少距离
 		self.background.setDistance(self._getDistance());
 		// 显示当前油耗
 		self.background.setQtrip(self.oilWear.toFixed(2));
+		// 显示当前剩余油量
 		self.background.setOilMass(self.oilMassLeave);
 
 	} else {
 		self.background.setCanMove(false);
 		self.car.setCanMove(false);
+		self.prop.setCanMove(false);
+
 		self.gameOver = new GameOver(self.resources, function() {
 			self.init();
 		});

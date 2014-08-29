@@ -11,22 +11,6 @@
 	var game = {
 		debug: false,
 
-		// 刷新间隔，毫秒数
-		interval: 20,
-
-		// 画布宽度、高度
-		width: 800,
-		height: 450,
-
-		// 循环播放最大宽度
-		cycleWidth: 907 - 807,
-
-		// 容器DOM的ID
-		eleId: 'legend',
-
-		// 虚拟游戏世界
-		world: null,
-
 		// 所有静态资源，图片文件、脚本文件、声音文件
 		resources: [{
 			name: "bg",
@@ -191,10 +175,9 @@
 	LGlobal.ios = true;
 	LGlobal.aspectRatio = PORTRAIT;
 
-	init(game.interval, game.eleId, game.width, game.height, function() {
+	init(20, 'legend', 800, 450, function() {
 		LGlobal.setDebug(true);
 		LStage.setDebug(true);
-		LStage.box2d = new LBox2d();
 
 		var initScreen = window.onorientationchange = window.onresize = function(){
 			if (LGlobal.canTouch) {
@@ -224,9 +207,8 @@
 		});
 	});
 
-	</script>
-</head>
+	</script></head>
 <body style="padding: 0; margin: 0; border: 0;">
-	<div id="legend">loading……</div>
+	<div id="legend">正在加载...</div>
 </body>
 </html>
