@@ -1,4 +1,4 @@
-function Prop(resources, car, reduceOilMass) {
+function Prop(resources, car, reduceOilMass, isLeft) {
 	var self = this;
 
 	base(self, LSprite, []);
@@ -7,6 +7,7 @@ function Prop(resources, car, reduceOilMass) {
 	self.car = car;
 	self._reduceOilMass = reduceOilMass;
 	self._continue = null;
+	self._isLeft = isLeft;
 
 	self.init();
 }
@@ -29,6 +30,7 @@ Prop.prototype.throw = function(second, callback) {
 		self.layer.visible = true;
 
 		self.tween = LTweenLite.to(self.layer, 2, {
+			x: self._isLeft !== true ? 500 : 240,
 			y: LGlobal.height,
 			scaleX: 1.2,
 			scaleY: 1.2,
@@ -46,9 +48,9 @@ Prop.prototype._resetLayer = function() {
 	var name = Math.random() > 0.5 ? 'jyq1' : 'jyq2';
 
 	self.layer.visible = false;
-	self.layer.scaleX = 0.2;
-	self.layer.scaleY = 0.2;
-	self.layer.x = (LGlobal.width - 260 * 2) * Math.random() + 260;
+	self.layer.scaleX = 0.4;
+	self.layer.scaleY = 0.4;
+	self.layer.x = self._isLeft === true ? 360 : 420; //(LGlobal.width - 322 * 2) * Math.random() + 322;
 	self.layer.y = 10;
 	self.layer.die();
 	self.layer.removeAllChild();

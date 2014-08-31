@@ -35,7 +35,7 @@ Background.prototype.init = function() {
 	self.addChild(self.layer2_m);
 	// 右侧
 	self.layer2_r = new LSprite();
-	self.layer2_r.x = LGlobal.width - 130;
+	self.layer2_r.x = LGlobal.width - 140;
 	self.layer2_r.y = 10;
 	self.addChild(self.layer2_r);
 	// 散件
@@ -143,18 +143,6 @@ Background.prototype.setDistance = function(distance) {
 	self.ltfDistance.text = distance + 'KM';
 };
 
-Background.prototype.showOilIncrease = function() {
-	return;
-	var self = this;
-	// LTweenLite.remove(self.tween);
-
-	self.tween = LTweenLite.to(self.layerGas, 0.5, {
-		scaleX: 1.2,
-		scaleY: 1.2,
-		ease: LEasing.Strong.easeIn
-	});
-};
-
 // 设置当前油耗
 Background.prototype.setQtrip = function(qtrip) {
 	var self = this;
@@ -209,6 +197,21 @@ Background.prototype.setOilMass = function(oilMass) {
 		shape.graphics.fill();
 		self.layerOilMass.addChild(shape);
 	}
+
+	if (!self.layerOilMassFont) {
+		self.layerOilMassFont = new LSprite();
+		self.layerOilMassFont.x = 460;
+		self.layerOilMassFont.y = 410;
+		self.addChild(self.layerOilMassFont);
+
+		self.ltfOilMassFont = new LTextField();
+		self.ltfOilMassFont.color = "#000";
+		self.ltfOilMassFont.size = 12;
+		self.layerOilMassFont.addChild(self.ltfOilMassFont);
+	}
+
+	self.ltfOilMassFont.text = oilMass > 0 ? oilMass.toFixed(2) : 0 + 'L';
+
 
 	if (self.shapOilMassLeave) {
 		self.shapOilMassLeave.remove();

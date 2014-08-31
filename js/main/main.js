@@ -26,7 +26,7 @@ Main.prototype.init = function() {
 
 	// self.gameOver = new GameOver(self.resources, function() {
 	// 	self.init();
-	// });
+	// }, 18.18, 5.3);
 	// self.addChild(self.gameOver);
 	// return;
 
@@ -42,7 +42,6 @@ Main.prototype.init = function() {
 		self.oilMassLeave = self.oilMassObtained;
 		// 显示点击屏幕获得的油量
 		self.background.setOilMass(self.oilMassLeave);
-		self.background.showOilIncrease();
 	}, self._start);
 	self.addChild(self.ready);
 
@@ -56,19 +55,23 @@ Main.prototype.throwProp = function(enable) {
 
 	if (enable === true) {
 		var second = (1.5 + Math.random() * 3.5);
+		var isLeft = Math.random() > 0.5;
+		var allThrow = 3.5 < second && second < 4;
 
-		if (3.5 < second && second < 4) {
-			self.prop_2.throw(second, function() {
+		if (isLeft === true || allThrow === true) {
+			self.prop.throw(second, function() {
+				self.throwProp(self._running());
+			});
+		}
+		if (isLeft === false || allThrow === true) {
+			self.prop_right.throw(second, function() {
 				self.throwProp(self._running());
 			});
 		}
 
-		self.prop.throw(second, function() {
-			self.throwProp(self._running());
-		});
 	} else {
 		self.prop.setCanMove(false);
-		self.prop_2.setCanMove(false);
+		self.prop_right.setCanMove(false);
 	}
 };
 
@@ -87,15 +90,15 @@ Main.prototype._start = function() {
 
 	self.prop = new Prop(self.resources, self.car, function() {
 		self._reduceOilMass();
-	});
+	}, true);
 	self.addChild(self.prop);
 	self.prop.setCanMove(true);
 
-	self.prop_2 = new Prop(self.resources, self.car, function() {
+	self.prop_right = new Prop(self.resources, self.car, function() {
 		self._reduceOilMass();
-	});
-	self.addChild(self.prop_2);
-	self.prop_2.setCanMove(true);
+	}, false);
+	self.addChild(self.prop_right);
+	self.prop_right.setCanMove(true);
 
 	self.throwProp(true);
 
@@ -125,10 +128,11 @@ Main.prototype._onFrame = function(event) {
 		self.car.setCanMove(false);
 		self.throwProp(false);
 
-		self.gameOver = new GameOver(self.resources, function() {
-			self.init();
-		});
-		self.addChild(self.gameOver);
+		// self.gameOver = new GameOver(self.resources, function() {
+		// 	self.init();
+		// }, self.distance, self.oilWear);
+		// self.addChild(self.gameOver);
+		location.href = ['gameover.php?distance=', self.distance, '&oilwear=', self.oilWear].join('');
 
 		self.removeEventListener(LEvent.ENTER_FRAME, self._onFrame);
 	}
