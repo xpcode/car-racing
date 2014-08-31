@@ -27,16 +27,20 @@ Background.prototype.init = function() {
 	self.addChild(self.layer1);
 	// 左侧
 	self.layer2_l = new LSprite();
+	self.layer2_l.x = 10;
+	self.layer2_l.y = 10;
 	self.addChild(self.layer2_l);
 	// 中间
 	self.layer2_m = new LSprite();
 	self.addChild(self.layer2_m);
 	// 右侧
 	self.layer2_r = new LSprite();
+	self.layer2_r.x = LGlobal.width - 130;
+	self.layer2_r.y = 10;
 	self.addChild(self.layer2_r);
 	// 散件
-	self.layer3 = new LSprite();
-	self.addChild(self.layer3);
+	self.layerGas = new LSprite();
+	self.addChild(self.layerGas);
 
 	// 背景图
 	self._genBg();
@@ -84,7 +88,7 @@ Background.prototype._genGas = function() {
 	self.gas = new LBitmap(new LBitmapData(self.resources["gas"]));
 	self.gas.x = 230;
 	self.gas.y = LGlobal.height - self.gas.height - 10;
-	self.layer3.addChild(self.gas);
+	self.layerGas.addChild(self.gas);
 };
 
 Background.prototype._genBg = function() {
@@ -127,90 +131,65 @@ Background.prototype._genRoadtips = function() {
 	self.layer2_m.y = LGlobal.height - self.layer2_m.getHeight();
 };
 
-Background.prototype._getResourceName = function(num) {
-	return {
-		'1': 'number_1',
-		'2': 'number_2',
-		'3': 'number_3',
-		'4': 'number_4',
-		'5': 'number_5',
-		'6': 'number_6',
-		'7': 'number_7',
-		'8': 'number_8',
-		'9': 'number_9',
-		'0': 'number_0',
-		'.': 'number_dot',
-		'km': 'number_km',
-		'dw': 'number_dw'
-	}[num] || '';
-};
-
 // 设置跑了多少KM
 Background.prototype.setDistance = function(distance) {
 	var self = this;
-	var arr = String(distance).split('').concat(['km']);
-	var i = 0,
-		len = arr.length,
-		name = '',
-		bmap = null,
-		x = 0;
-
-	self.layer2_r.removeAllChild();
-
-	for (; i < len; i++) {
-		name = this._getResourceName(arr[i]);
-
-		if (name.length > 0) {
-			bmap = new LBitmap(new LBitmapData(self.resources[name]));
-			bmap.x = x;
-			if (arr[i] == '.') {
-				bmap.y = 23;
-			}
-			self.layer2_r.addChild(bmap);
-
-			x += bmap.width - 5;
-		}
+	if (!self.ltfDistance) {
+		self.ltfDistance = new LTextField();
+		self.ltfDistance.color = "#FFFFFF";
+		self.ltfDistance.size = 24;
+		self.layer2_r.addChild(self.ltfDistance);
 	}
+	self.ltfDistance.text = distance + 'KM';
+};
 
-	self.layer2_r.x = LGlobal.width - self.layer2_r.getWidth() - 20;
-	self.layer2_r.y = 20;
+Background.prototype.showOilIncrease = function() {
+	return;
+	var self = this;
+	// LTweenLite.remove(self.tween);
+
+	self.tween = LTweenLite.to(self.layerGas, 0.5, {
+		scaleX: 1.2,
+		scaleY: 1.2,
+		ease: LEasing.Strong.easeIn
+	});
 };
 
 // 设置当前油耗
 Background.prototype.setQtrip = function(qtrip) {
 	var self = this;
-	var arr = String(qtrip).split('').concat(['dw']);
-	var i = 0,
-		len = arr.length,
-		name = '',
-		bmap = null,
-		x = 0;
 
-	self.layer2_l.removeAllChild();
-
-	for (; i < len; i++) {
-		name = this._getResourceName(arr[i]);
-
-		if (name.length > 0) {
-			bmap = new LBitmap(new LBitmapData(self.resources[name]));
-			bmap.x = x;
-			if (arr[i] == '.') {
-				bmap.y = 23;
-			}
-			self.layer2_l.addChild(bmap);
-
-			x += bmap.width - 5;
-		}
+	if (!self.ltfQtrip) {
+		self.ltfQtrip = new LTextField();
+		self.ltfQtrip.color = "#FFFFFF";
+		self.ltfQtrip.size = 24;
+		self.ltfQtrip.x = 160;
+		self.layer2_l.addChild(self.ltfQtrip);
 	}
+	self.ltfQtrip.text = qtrip + 'L/100KM';
 
-	self.layer2_l.x = 160;
-	self.layer2_l.y = 20;
+	if (!self.ltfQtripRect) {
+		var shape = new LShape();
+		shape.graphics.drawRect(2, "#ff0000", [10, 10, 140, 24]);
+		shape.graphics.fillStyle("#fff");
+		shape.graphics.fill();
+		shape.y = -5;
+		self.layer2_l.addChild(shape);
+
+		self.ltfQtripRect = new LShape();
+		self.ltfQtripRect.graphics.drawRect(0, "#f55a4d", [10, 10, 100, 24]);
+		self.ltfQtripRect.graphics.fillStyle("#f55a4d");
+		self.ltfQtripRect.graphics.fill();
+		self.ltfQtripRect.y = -5;
+		self.layer2_l.addChild(self.ltfQtripRect);
+	}
+	self.ltfQtripRect.scaleX = qtrip / 5.5;
 };
 
 // 设置油量
-Background.prototype.setOilMass = function(clickCount) {
+Background.prototype.setOilMass = function(oilMass) {
 	var self = this,
-		scale = clickCount / 6,
+		scale = oilMass / 1,
 		max_x = self.gas.x + 5,
 		max_y = 10 - self.gas.height;
 

@@ -6,10 +6,7 @@ function Prop(resources, car, reduceOilMass) {
 	self.resources = resources;
 	self.car = car;
 	self._reduceOilMass = reduceOilMass;
-
-	// 扔道具的下一个时间戳
-	self.throwTicks = Date.now();
-	self.canMove = false;
+	self._continue = null;
 
 	self.init();
 }
@@ -23,20 +20,25 @@ Prop.prototype.init = function() {
 	self._resetLayer();
 };
 
-Prop.prototype._throw = function() {
+Prop.prototype.throw = function(second, callback) {
 	var self = this;
 
-	self.layer.visible = true;
+	self._continue = callback;
 
-	LTweenLite.to(self.layer, 5, {
-		y: LGlobal.height,
-		scaleX: 1.2,
-		scaleY: 1.2,
-		ease: LEasing.Strong.easeInOut,
-		onComplete: function() {
-			self.throwTicks += Math.ceil(1000 * Math.random());
-		}
-	});
+	setTimeout(function() {
+		self.layer.visible = true;
+
+		self.tween = LTweenLite.to(self.layer, 2, {
+			y: LGlobal.height,
+			scaleX: 1.2,
+			scaleY: 1.2,
+			ease: LEasing.Strong.easeIn,
+			onComplete: function() {
+				self._resetLayer();
+				self._continue();
+			}
+		});
+	}, second * 1000);
 };
 
 Prop.prototype._resetLayer = function() {
@@ -46,7 +48,7 @@ Prop.prototype._resetLayer = function() {
 	self.layer.visible = false;
 	self.layer.scaleX = 0.2;
 	self.layer.scaleY = 0.2;
-	self.layer.x = (LGlobal.width - 240 * 2) * Math.random() + 240;
+	self.layer.x = (LGlobal.width - 260 * 2) * Math.random() + 260;
 	self.layer.y = 10;
 	self.layer.die();
 	self.layer.removeAllChild();
@@ -59,22 +61,11 @@ Prop.prototype._onFrame = function(event) {
 	if (self.layer.visible === true) {
 		if (LGlobal.hitTestPolygon(self.car.getCoords(), self.getCoords())) {
 			LTweenLite.remove(self.tween);
+
 			self._reduceOilMass();
 			self._resetLayer();
+			self._continue();
 		}
-	} else if (Date.now() >= self.throwTicks) {
-		self.layer.visible = true;
-
-		self.tween = LTweenLite.to(self.layer, 5, {
-			y: LGlobal.height,
-			scaleX: 1.2,
-			scaleY: 1.2,
-			ease: LEasing.Strong.easeIn,
-			onComplete: function() {
-				self._resetLayer();
-				self.throwTicks += Math.ceil(5000 * Math.random());
-			}
-		});
 	}
 };
 

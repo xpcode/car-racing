@@ -5,6 +5,7 @@ function Main(resources) {
 
 	// 资源列表
 	self.resources = resources;
+	self.DEFAULT_OILWEAR = 5.5;
 }
 
 Main.prototype.init = function() {
@@ -15,11 +16,13 @@ Main.prototype.init = function() {
 	self.removeAllChild();
 
 	// 当前油耗（默认小数点后6位）（获得节油器会降低当前油耗值）
-	self.oilWear = 5.9;
+	self.oilWear = self.DEFAULT_OILWEAR;
 	// 通过开始10秒钟的点击获得的油量
 	self.oilMassObtained = 0;
 	// 当前还剩下多少L油（默认小数点后1位）
 	self.oilMassLeave = self.oilMassObtained;
+	// 已经跑的KM数
+	self.distance = 0;
 
 	// self.gameOver = new GameOver(self.resources, function() {
 	// 	self.init();
@@ -39,11 +42,33 @@ Main.prototype.init = function() {
 		self.oilMassLeave = self.oilMassObtained;
 		// 显示点击屏幕获得的油量
 		self.background.setOilMass(self.oilMassLeave);
+		self.background.showOilIncrease();
 	}, self._start);
 	self.addChild(self.ready);
 
 	if (game.debug) {
 		addChild(new FPS());
+	}
+};
+
+Main.prototype.throwProp = function(enable) {
+	var self = this;
+
+	if (enable === true) {
+		var second = (1.5 + Math.random() * 3.5);
+
+		if (3.5 < second && second < 4) {
+			self.prop_2.throw(second, function() {
+				self.throwProp(self._running());
+			});
+		}
+
+		self.prop.throw(second, function() {
+			self.throwProp(self._running());
+		});
+	} else {
+		self.prop.setCanMove(false);
+		self.prop_2.setCanMove(false);
 	}
 };
 
@@ -57,50 +82,48 @@ Main.prototype._start = function() {
 	self.addEventListener(LEvent.ENTER_FRAME, self._onFrame);
 	self.addEventListener(LMouseEvent.MOUSE_DOWN, self._onMouseDown);
 
-	// 当前投放的节油器对象
-	self.prop = new Prop(self.resources, self.car, function() {
-		self.oilWear -= self.oilWear * 0.05;
-	});
-	self.addChild(self.prop);
-
 	self.car.setCanMove(true);
 	self.background.setCanMove(true);
+
+	self.prop = new Prop(self.resources, self.car, function() {
+		self._reduceOilMass();
+	});
+	self.addChild(self.prop);
 	self.prop.setCanMove(true);
 
+	self.prop_2 = new Prop(self.resources, self.car, function() {
+		self._reduceOilMass();
+	});
+	self.addChild(self.prop_2);
+	self.prop_2.setCanMove(true);
+
+	self.throwProp(true);
+
 	if (!!game.debug) {
-		self.oilMassObtained = self.oilMassLeave = 3;
-	}
-};
-
-Main.prototype._onMouseDown = function(event) {
-	var self = Main._instance;
-
-	if (self.oilMassLeave > 0) {
-		if (event.offsetX < LGlobal.width / 2) {
-			self.car.moveToLeft();
-		} else {
-			self.car.moveToRight();
-		}
+		self.oilMassObtained = self.oilMassLeave = 1;
 	}
 };
 
 Main.prototype._onFrame = function(event) {
 	var self = Main._instance;
 
-	self.oilMassLeave -= self.oilWear / (30 * 50);
+	// 相当于每秒油耗为 5.5/120
+	var tempOilWear = self.oilWear / (120 * 50);
 
-	if (self.oilMassLeave > 0) {
-		// 显示已经跑了多少距离
-		self.background.setDistance(self._getDistance());
-		// 显示当前油耗
-		self.background.setQtrip(self.oilWear.toFixed(2));
-		// 显示当前剩余油量
-		self.background.setOilMass(self.oilMassLeave);
+	self.oilMassLeave -= tempOilWear;
+	self.distance += tempOilWear * 100 / self.DEFAULT_OILWEAR;
 
-	} else {
+	// 显示已经跑了多少距离
+	self.background.setDistance(self.distance.toFixed(2));
+	// 显示当前油耗
+	self.background.setQtrip(self.oilWear.toFixed(3));
+	// 显示当前剩余油量
+	self.background.setOilMass(self.oilMassLeave);
+
+	if (!self._running()) {
 		self.background.setCanMove(false);
 		self.car.setCanMove(false);
-		self.prop.setCanMove(false);
+		self.throwProp(false);
 
 		self.gameOver = new GameOver(self.resources, function() {
 			self.init();
@@ -111,26 +134,39 @@ Main.prototype._onFrame = function(event) {
 	}
 };
 
-// 计算已形式路程
-Main.prototype._getDistance = function() {
-	var self = this;
-
-	// 标准平均油耗为5.9L/100km
-	return (((self.oilMassObtained - self.oilMassLeave) * 100) / 5.9).toFixed(3);
-};
-
 // 计算获得的油量
 Main.prototype._getOilMassObtained = function(clickCount) {
 	var self = this;
 	var oilmass = 1;
 
-	if (clickCount > 100) {
-		oilmass += ((clickCount - 100) / 10) * 0.05;
-	} else {
-		oilmass -= ((100 - clickCount) / 5) * 0.05;
+	if (clickCount < 80) {
+		oilmass -= (80 - clickCount) * 0.01;
 	}
 
 	return oilmass;
+};
+
+Main.prototype._onMouseDown = function(event) {
+	var self = Main._instance;
+
+	if (self._running()) {
+		if (event.offsetX < LGlobal.width / 2) {
+			self.car.moveToLeft();
+		} else {
+			self.car.moveToRight();
+		}
+	}
+};
+
+Main.prototype._reduceOilMass = function() {
+	var self = this;
+
+	self.oilWear -= self.DEFAULT_OILWEAR * 0.01;
+	self.distance += 18.18 * 0.01;
+}
+
+Main.prototype._running = function() {
+	return this.oilMassLeave > 0;
 };
 
 Main._instance = null;

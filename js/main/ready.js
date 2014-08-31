@@ -6,7 +6,7 @@ function Ready(resources, setOilMass, start) {
 	self.resources = resources;
 	self.start = start;
 	self.setOilMass = setOilMass;
-	self.clickCount = 0;
+	self.clickCount = -1;
 
 	self.init();
 }
@@ -31,10 +31,8 @@ Ready.prototype.init = function() {
 	self.layer.addChild(button);
 
 	// 点击按钮10秒后开始3、2、1、go
-	button.addEventListener(LMouseEvent.MOUSE_DOWN, function() {
-		button.removeAllChild();
+	button.addEventListener(LMouseEvent.MOUSE_DOWN, function(event) {
 		button.removeAllEventListener();
-
 		self.layer.removeAllChild();
 
 		setTimeout(function() {
@@ -72,7 +70,7 @@ Ready.prototype._clickScreen = function() {
 
 			self.layer.removeAllChild();
 			self.removeChild(self.layer);
-			self.start(self.clickCount + 110);
+			self.start(self.clickCount);
 
 		}
 	}, 1000);
