@@ -1,6 +1,3 @@
-/**
- * @author lufy
- */
 function GameOver(resources, fnStartGame, distance, oilWear) {
 	base(this, LSprite, []);
 
